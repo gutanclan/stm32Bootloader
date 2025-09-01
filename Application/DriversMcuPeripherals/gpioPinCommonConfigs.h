@@ -1,0 +1,29 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!    \file        GpioPinCommonConfigs.h
+//!    \brief       GPIO common configurations
+//!
+//!	   \author
+//!	   \date
+//!
+//!    \notes
+//!
+//!    \defgroup   TypeOfModule   Group Name
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifndef _GPIO_PIN_COMMON_CONFIGS_H_
+#define _GPIO_PIN_COMMON_CONFIGS_H_
+
+#include "../Utils/Types.h"
+#include "gpio.h"
+
+//extern const GpioConfigType ggtGpioPinCommonConfigs_In_OPp_O2MHz_RPd;
+
+///////////////////////////////////////// END OF HEADER //////////////////////////////////////////
+
+#endif // _GPIO_PIN_COMMON_CONFIGS_H_
+
+
+
+

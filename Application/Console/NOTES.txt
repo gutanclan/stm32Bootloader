@@ -1,0 +1,5 @@
+*move str modules to utils
+* add here in console 2 layers
+
+layer 1 Printf
+layer 2 debugf

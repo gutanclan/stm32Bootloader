@@ -1,0 +1,1423 @@
+/** C Header ******************************************************************
+
+*******************************************************************************/
+
+#include <assert.h>
+#include <string.h>     /* memset() */
+#include <stdio.h>      /* printf() */
+#include <ctype.h>      /* isprint() */
+#include <stdlib.h>
+
+#include <stdarg.h>         // For va_arg support
+
+#include "Types.h"
+
+// PCOM Project Targets
+#include "Target.h"             // Hardware target specifications
+
+#include "Asc.h"
+#include "Config.h"
+#include "Debug.h"
+#include "General.h"
+#include "Gpio.h"
+
+//#include "Modem.h"
+//#include "Module.h"     /* Common task control structure definition */
+#include "StringTable.h"
+#include "Timer.h"
+#include "Usart.h"
+#include "Datalog.h"
+#include "Control.h"
+#include "Console.h"
+
+
+#include "../../Utils/StringUtils.h"
+#include "ModemPower.h"
+#include "ModemConnect.h"
+#include "ModemSim.h"
+#include "ModemRegStat.h"
+#include "../ModemData.h"
+#include "../ModemCommandResponse/Modem.h"
+#include "../ModemCommandResponse/ModemCommand.h"
+#include "../ModemCommandResponse/ModemResponse.h"
+#include "../../Utils/StateMachine.h"
+
+typedef enum
+{
+    MODEM_CONN_STATE_UNINITIALIZED = 0,
+    
+    MODEM_CONN_STATE_DISABLED,
+    
+    MODEM_CONN_STATE_UNREG_IDLE, // unregistered
+    
+    MODEM_CONN_STATE_REG_RUN_START,
+    // Network Registration
+    MODEM_CONN_STATE_REG_RUN_FORCE_START_REG_SET_COPS,
+    MODEM_CONN_STATE_REG_RUN_CREG,
+    MODEM_CONN_STATE_REG_RUN_CREG_WAIT,
+    // Config Data Connection
+    MODEM_CONN_STATE_REG_RUN_CONFIG_DATA_CONNECTION, // PDP ... apn required to start data transactions    
+    MODEM_CONN_STATE_REG_RUN_CONFIG_DATA_CONNECTION_WAIT, // let the modem finish configuring
+    // Configure Socket
+    MODEM_CONN_STATE_REG_SOCKET_CHECK_STAT,
+    MODEM_CONN_STATE_REG_RUN_CONFIG_SOCKET,
+    MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE,
+    MODEM_CONN_STATE_REG_RUN_ACTIVATE_SOCKET,
+    
+    MODEM_CONN_STATE_REG_IDLE, // registered
+    
+    MODEM_CONN_STATE_UNREG_START,
+
+    // unreg will be done in reverse order
+    // close socket 1.- disable automatic reactivation() 2.- close socket (#SH) / (check socket status with #SS )
+    MODEM_CONN_STATE_UNREG_SOCKET_DEACTIVATE_CONTEXT, 
+    MODEM_CONN_STATE_UNREG_SOCKET_CHECK_STAT,
+    MODEM_CONN_STATE_UNREG_SOCKET_WAIT,
+    MODEM_CONN_STATE_UNREG_CLOSE_SOCKET, 
+    // unreg
+    MODEM_CONN_STATE_UNREG_START_UNREG_COPS,  // cops with mode 2 = unregister from gsm network  
+    MODEM_CONN_STATE_UNREG_RUN_CREG,
+    MODEM_CONN_STATE_UNREG_RUN_CREG_WAIT,
+
+    MODEM_CONN_STATE_UNREG_END,
+
+    MODEM_CONN_STATE_MAX,
+}ModemPowerStateEnum;
+
+const CHAR *    cModemConnStateMachineName[MODEM_CONN_STATE_MAX] = 
+{
+    "UNINITIALIZED",
+    
+    "Conn Disabled",
+    
+    "Disconnected Idle",
+    
+    "Conn Start",
+    "Conn Force Reg Cops",
+    "Conn Creg",
+    "Conn Creg wait",
+    "Conn Config Data Connection", // Apn
+    "Conn Config Data Connection wait",
+    
+    "Conn Socket check stat",
+    "Conn Config Socket",
+    "Conn check if context active",
+    "Conn Activate Socket context",
+    
+    "Connected Idle",
+    
+    "Disconn Start",
+    "Disconn disable context",
+    "Disconn check stat",
+    "Disconn socket wait",
+    "Disconn close socket",
+
+    "Disconn cops unreg",
+    "Disconn Creg",
+    "Disconn Creg wait",
+    "Disconn End",    
+};
+
+const CHAR   * pcModemApnAddressList[] = 
+{
+    "in.validapnbad.com",
+    "inet.bell.ca",
+    "inet.bell.ca.m2m",
+    "jaspermo.apn",
+    "SL1.korem2m.com",
+    "internet.com",
+    "pda.stm.sk.ca",
+    "sp.telus.com",
+    "staticipwest.telus.com"
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// unique from this module
+static BOOL                             gfIsUpdateConfigRequested;
+static ModemConnectPdpConfigType        gtRequestedPdpConfig;
+static ModemConnectSocketConfigType     gtRequestedSocketConnConfig;
+
+static BOOL                             gfIsConnected;
+static BOOL                             gfConnectionTimeOutEnabled;
+static UINT32                           gdwAttemptConnectionTimeOut_mSec;
+static TIMER                            gxTimer; 
+
+//
+static ModemDataType                   *gpModemData;
+
+// operation
+static BOOL                             gfIsWaitingForNewCommand;
+static ModemStateMachineType            gtStateMachine;
+static ModemCommandSemaphoreEnum        geSemaphore;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemConnectInit( void )
+{
+    // set state machine to a initial state.
+    StateMachineInit( &gtStateMachine.tState );       
+    
+    gpModemData = ModemResponseModemDataGetPtr();
+    
+    if( gpModemData == NULL )
+    {
+        // catch this bug on development time
+        while(1);
+    }
+}
+
+void ModemConnectConfigPdp( ModemConnectPdpConfigType *ptPdpConfig )
+{
+    // TODO: validate each of the params before copying the structure
+    if( NULL != ptPdpConfig )
+    {
+        memcpy( &gtRequestedPdpConfig, ptPdpConfig, sizeof(gtRequestedPdpConfig) );
+        gpModemData->tModemConnStat.tPdpConfig.fIsPdpSet = TRUE;
+        gfIsUpdateConfigRequested = TRUE;
+    }
+}
+
+void ModemConnectConfigSocket( ModemConnectSocketConfigType *ptSocketConnConfig )
+{
+    // TODO: validate each of the params before copying the structure
+    if( NULL != ptSocketConnConfig )
+    {
+        memcpy( &gtRequestedSocketConnConfig, ptSocketConnConfig, sizeof(gtRequestedSocketConnConfig) );
+        gpModemData->tModemConnStat.tSocketConnConfig.fIsSocketSet = TRUE;        
+        gfIsUpdateConfigRequested = TRUE;
+
+
+        // update socket context and Id
+        gpModemData->tNetwork.bSocketConnId = ptSocketConnConfig->bSocketConnId;
+        gpModemData->tNetwork.bPdpCntxtId   = ptSocketConnConfig->bPdpCntxtId;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemConnectRun( BOOL fConnectToNetwork, UINT32 dwAttemptConnectionTimeOut_mSec )
+{
+    // run only if power on and sim attached
+    if( gfIsWaitingForNewCommand ) // this variable gets set in the state machine automatically to FALSE if power is off.
+    {
+        // time out to run this operation            
+        gdwAttemptConnectionTimeOut_mSec = dwAttemptConnectionTimeOut_mSec;                           
+        gxTimer                          = TimerDownTimerStartMs( gdwAttemptConnectionTimeOut_mSec );                
+        gfConnectionTimeOutEnabled       = TRUE;
+
+        if( gfIsConnected == FALSE )
+        {
+            // indicate command will start running so more commands are not accepted
+            gfIsWaitingForNewCommand = FALSE;
+            
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_START );            
+        }
+        else
+        {
+            // indicate command will start running so more commands are not accepted
+            gfIsWaitingForNewCommand = FALSE;
+            
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_START );
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL ModemConnectIsWaitingForCommand( void )
+{
+    return gfIsWaitingForNewCommand;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL ModemConnectIsConnected( void )
+{
+    return gfIsConnected;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemConnectStateMachine( void )
+{
+    StateMachineUpdate( &gtStateMachine.tState );
+
+    if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+    {
+        // print message that power is on
+        ModemConsolePrintDbg( "MDM SM <%s>", cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent] );        
+    }
+
+    if( gfConnectionTimeOutEnabled )
+    {
+        if( TimerDownTimerIsExpired( gxTimer ) )
+        {
+            // force to go to unregistered and make sure all variables are cleared
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+
+            ModemConsolePrintDbg( "MODEM OPERATION TIMED OUT" );
+            ModemConsolePrintf("Modem Connect Tiome Out\r\n");
+        }
+    }
+
+    switch( gtStateMachine.tState.bStateCurrent )
+    {        
+        case MODEM_CONN_STATE_UNINITIALIZED:
+        {
+            // go to waiting for operation to run
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_DISABLED );
+            break;
+        }
+            
+        case MODEM_CONN_STATE_DISABLED:
+        {
+            //////////////////////////////////////////////////
+            // DISABLED
+            // not allowed to run config operation
+            //////////////////////////////////////////////////
+        
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                // clear network variables
+                gpModemData->tNetwork.szIp[0]           = '\0';
+                gpModemData->tNetwork.bSocketStat       = 0;
+                gpModemData->tNetwork.bSocketCntxtStat  = 0;
+                gpModemData->tNetwork.bCregStat         = 0;
+
+                // print message 
+                ModemConsolePrintf( "Modem Connect Disabled\r\n" );
+            }
+
+            gfIsWaitingForNewCommand                = FALSE;
+            gfIsConnected                = FALSE;
+            gfConnectionTimeOutEnabled   = FALSE;
+        
+            if
+            ( 
+                ModemPowerIsPowerEnabled() && 
+                ModemSimIsReady() &&
+                gpModemData->tModemConnStat.tPdpConfig.fIsPdpSet &&
+                gpModemData->tModemConnStat.tSocketConnConfig.fIsSocketSet
+            )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+        
+        case MODEM_CONN_STATE_UNREG_IDLE:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                // print message 
+                ModemConsolePrintf( "Modem Disconnected Idle\r\n" );
+            }
+
+            //////////////////////////////////////////////////
+            // IDLE
+            // waiting for new operation request
+            //////////////////////////////////////////////////
+
+            gfIsWaitingForNewCommand                = TRUE;
+            gfIsConnected                = FALSE;
+            gfConnectionTimeOutEnabled   = FALSE;
+            
+            if
+            ( 
+                ( ModemPowerIsPowerEnabled() == FALSE ) || 
+                ( ModemSimIsReady() == FALSE )
+            )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_DISABLED );
+            }
+            break;
+        }
+         
+        case MODEM_CONN_STATE_REG_RUN_START:
+        {
+            // not allowed to repeat registration if state is already registered
+            if( gfIsConnected == FALSE )
+            {
+                // update connection configuration
+                if( gfIsUpdateConfigRequested )
+                {
+                    memcpy( &gpModemData->tModemConnStat.tPdpConfig.tConfig, &gtRequestedPdpConfig, sizeof(gpModemData->tModemConnStat.tPdpConfig.tConfig) );
+                    memcpy( &gpModemData->tModemConnStat.tSocketConnConfig.tConfig, &gtRequestedSocketConnConfig, sizeof(gpModemData->tModemConnStat.tSocketConnConfig.tConfig) );                    
+
+                    // clear flag
+                    gfIsUpdateConfigRequested = FALSE;
+                }
+
+                // make sure both configurations has been set
+                if
+                (
+                    ( gpModemData->tModemConnStat.tPdpConfig.fIsPdpSet ) &&
+                    ( gpModemData->tModemConnStat.tSocketConnConfig.fIsSocketSet )
+                )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_FORCE_START_REG_SET_COPS );
+                }
+                else
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );                
+                }
+            }
+            else
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_IDLE );
+            }
+            break;
+        }
+        
+        case MODEM_CONN_STATE_REG_RUN_FORCE_START_REG_SET_COPS:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    ModemCommandProcessorSendAtCommand( "+COPS=0" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CREG_WAIT );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }            
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_REG_RUN_CREG:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                ModemRegStatCheckRun();
+                // if need to wait for response set time out
+                StateMachineSetTimeOut( &gtStateMachine.tState, 2000 );
+            }
+            
+            if( ModemRegStatIsWaitingForCommand() )
+            {
+                // process result
+                switch( ModemRegStatGetStatus() )
+                {
+                    case MODEM_REG_STAT_NO_REG:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CREG_WAIT );
+                        break;
+                    case MODEM_REG_STAT_REG_HOME:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CONFIG_DATA_CONNECTION );
+                        break;
+                    case MODEM_REG_STAT_REG_SEARCHING:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CREG_WAIT );
+                        break;
+                    case MODEM_REG_STAT_REG_DENIED:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                        break;                                            
+                    case MODEM_REG_STAT_REG_ROAMING:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CONFIG_DATA_CONNECTION );
+                        break;
+                    case MODEM_REG_STAT_REG_UNKNOWN:
+                    default:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CREG_WAIT );
+                        break;
+                }
+                break;
+            }            
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "connect[%s] Error='%s'", 
+                    cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "timeout" 
+                );
+                                
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_REG_RUN_CREG_WAIT:
+        {
+            // try again after 2 seconds waiting
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {                
+                StateMachineSetTimeOut( &gtStateMachine.tState, 2000 );
+            }
+            
+            if
+            ( 
+                ( ModemPowerIsPowerEnabled() == FALSE ) || 
+                ( ModemSimIsReady() == FALSE )
+            )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CREG );
+            }
+            break;
+        }   
+                    
+        case MODEM_CONN_STATE_REG_RUN_CONFIG_DATA_CONNECTION:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    ModemCommandProcessorSendAtCommand
+                    ( 
+                        "+CGDCONT=%u,\"%s\",\"%s\",\"%s\",%d,%d", 
+                        gpModemData->tModemConnStat.tPdpConfig.tConfig.bPdpCntxtId, 
+                        &gpModemData->tModemConnStat.tPdpConfig.tConfig.szPdpProtocol[0],
+                        &gpModemData->tModemConnStat.tPdpConfig.tConfig.szApn[0],
+                        &gpModemData->tModemConnStat.tPdpConfig.tConfig.szPdpAddress[0],
+                        gpModemData->tModemConnStat.tPdpConfig.tConfig.bPdpDataCompression, 
+                        gpModemData->tModemConnStat.tPdpConfig.tConfig.bPdpHeaderCompression                        
+                    );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CONFIG_DATA_CONNECTION_WAIT );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_REG_RUN_CONFIG_DATA_CONNECTION_WAIT:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                StateMachineSetTimeOut( &gtStateMachine.tState, 500 );
+            }
+
+            if
+            ( 
+                ( ModemPowerIsPowerEnabled() == FALSE ) || 
+                ( ModemSimIsReady() == FALSE )
+            )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_SOCKET_CHECK_STAT );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_REG_SOCKET_CHECK_STAT:        
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( TRUE, "#SS:", 1, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    
+                    ModemCommandProcessorSendAtCommand( "#SS=%u", gpModemData->tModemConnStat.tSocketConnConfig.tConfig.bSocketConnId );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {       
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {
+                    switch( gpModemData->tNetwork.bSocketStat )
+                    {
+                        case 0:     // closed                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CONFIG_SOCKET );
+                            break;
+                        case 1:     // active data transfer                   
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE );
+                            break;
+                        case 2:     // suspended                
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE );
+                            break;
+                        case 3:     // suspended with pending data       
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE );
+                            break;                                            
+                        case 4:     // listening
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE );
+                            break;                                            
+                        case 5:     // incoming connection       
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE );
+                            break;
+                    
+                        default:    // unknown
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_CONFIG_SOCKET );
+                            break;
+                    }
+                }
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );                
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }        
+
+        case MODEM_CONN_STATE_REG_RUN_CONFIG_SOCKET:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    
+                    ModemCommandProcessorSendAtCommand
+                    ( 
+                        "#SCFG = %u,%u,%u,%u,%u,%u", 
+                        gpModemData->tModemConnStat.tSocketConnConfig.tConfig.bSocketConnId, 
+                        gpModemData->tModemConnStat.tSocketConnConfig.tConfig.bPdpCntxtId,
+                        gpModemData->tModemConnStat.tSocketConnConfig.tConfig.wDataProtocolPacketSize,
+                        gpModemData->tModemConnStat.tSocketConnConfig.tConfig.wDataExchangeTimeOut_Sec,
+                        gpModemData->tModemConnStat.tSocketConnConfig.tConfig.wConnTimeOut_x100_mSec, 
+                        gpModemData->tModemConnStat.tSocketConnConfig.tConfig.wDataSendTimeOut_x100_mSec
+                    );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+        
+        case MODEM_CONN_STATE_REG_CHECK_IF_CONTEXT_ACTIVE:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( TRUE, "#SGACT:", 1, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    
+                    ModemCommandProcessorSendAtCommand("#SGACT?");
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {          
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {
+                    switch( gpModemData->tNetwork.bSocketCntxtStat )
+                    {
+                        case 0:     // deactivated                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_RUN_ACTIVATE_SOCKET );
+                            break;
+                        case 1:     // activated
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_IDLE );
+                            break;
+                        default:    // unknown
+                            // treat it as an error to be logged
+                            // Set ERROR
+                            ModemEventLog
+                (
+                    TRUE,
+                                "connect[%s] Error='%s'", 
+                                cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                                "socket cntx unknown" 
+                            );
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                            break;
+                    }
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );                
+                break;                
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "connect[%s] Error='%s'", 
+                    cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "timeout" 
+                );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }        
+
+        case MODEM_CONN_STATE_REG_RUN_ACTIVATE_SOCKET:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( TRUE, "#SGACT:", 1, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 180000 );
+                    
+                    ModemCommandProcessorSendAtCommand( "#SGACT=%u,1", gpModemData->tModemConnStat.tSocketConnConfig.tConfig.bPdpCntxtId );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {              
+                    // indicate socket context has been activated
+                    gpModemData->tNetwork.bSocketCntxtStat = 1;
+
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_IDLE );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_REG_IDLE:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                // print message 
+                ModemConsolePrintf( "Modem Connected Idle\r\n" );
+            }
+
+            //////////////////////////////////////////////////
+            // IDLE
+            // waiting for new operation request
+            //////////////////////////////////////////////////
+
+            gfIsWaitingForNewCommand     = TRUE;
+            gfIsConnected                = TRUE;
+            gfConnectionTimeOutEnabled   = FALSE;
+            
+            //////////////////////////////////////////////////////////////////////////////////////
+            // check continuously for creg result in case it changes            
+            switch( ModemRegStatGetStatus() )
+            {                
+                case MODEM_REG_STAT_REG_HOME:
+                case MODEM_REG_STAT_REG_ROAMING:
+                    // do nothing
+                    break;
+                case MODEM_REG_STAT_NO_REG:
+                case MODEM_REG_STAT_REG_SEARCHING:
+                case MODEM_REG_STAT_REG_DENIED:
+                case MODEM_REG_STAT_REG_UNKNOWN:
+                default:
+                    gfIsWaitingForNewCommand = FALSE;
+                    // unreg
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+                    break;
+            }
+            //////////////////////////////////////////////////////////////////////////////////////
+
+            if
+            ( 
+                ( ModemPowerIsPowerEnabled() == FALSE ) || 
+                ( ModemSimIsReady() == FALSE )
+            )
+            {
+                gfIsWaitingForNewCommand = FALSE;
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_UNREG_START:
+        {
+            // not allowed to repeat registration if state is already registered
+            if( gfIsConnected )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_SOCKET_DEACTIVATE_CONTEXT );
+            }
+            else
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_REG_IDLE );
+            }
+            break;
+        }
+    
+        // close socket 1.- deactivate context()
+        case MODEM_CONN_STATE_UNREG_SOCKET_DEACTIVATE_CONTEXT:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    
+                    ModemCommandProcessorSendAtCommand( "#SGACT = %u,0", gpModemData->tModemConnStat.tSocketConnConfig.tConfig.bPdpCntxtId );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_SOCKET_CHECK_STAT );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_UNREG_SOCKET_CHECK_STAT:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( TRUE, "#SS:", 1, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    
+                    ModemCommandProcessorSendAtCommand( "#SS=%u", gpModemData->tModemConnStat.tSocketConnConfig.tConfig.bSocketConnId );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {           
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {  
+                    switch( gpModemData->tNetwork.bSocketStat )
+                    {
+                        case 0:                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_CLOSE_SOCKET );
+                            break;
+                        case 1:                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_CLOSE_SOCKET );
+                            break;
+                        case 2:                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_CLOSE_SOCKET );
+                            break;
+                        case 3:                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_CLOSE_SOCKET );
+                            break;                                            
+                        case 4:                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_CLOSE_SOCKET );
+                            break;                                            
+                        case 5:                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_SOCKET_WAIT );
+                            break;
+                    
+                        default:                        
+                            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_SOCKET_WAIT );
+                            break;
+                    }
+                }
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );                
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        /// wait until socket stat is different than “resolving DNS” or “connecting” before closing socket
+        case MODEM_CONN_STATE_UNREG_SOCKET_WAIT:
+        {
+            // try again after 2 seconds waiting
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {                
+                StateMachineSetTimeOut( &gtStateMachine.tState, 2000 );
+            }
+
+            if
+            ( 
+                ( ModemPowerIsPowerEnabled() == FALSE ) || 
+                ( ModemSimIsReady() == FALSE )
+            )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+            }
+            
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_SOCKET_CHECK_STAT );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_UNREG_CLOSE_SOCKET:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    
+                    ModemCommandProcessorSendAtCommand( "#SH=%u", gpModemData->tModemConnStat.tSocketConnConfig.tConfig.bSocketConnId );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_START_UNREG_COPS );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+    
+        case MODEM_CONN_STATE_UNREG_START_UNREG_COPS:  // cops with mode 2 = unregister from gsm network  
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();                    
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    
+                    ModemCommandProcessorSendAtCommand( "+COPS=2" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_RUN_CREG_WAIT );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                        "connect[%s] Error='%s'", 
+                        cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "timeout" 
+                    );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_UNREG_RUN_CREG:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                // if need to wait for response set time out
+                StateMachineSetTimeOut( &gtStateMachine.tState, 2000 );
+
+                ModemRegStatCheckRun();
+            }
+            
+            if( ModemRegStatIsWaitingForCommand() )
+            {                                
+                // process result
+                switch( ModemRegStatGetStatus() )
+                {
+                    case MODEM_REG_STAT_NO_REG:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+                        break;
+                    case MODEM_REG_STAT_REG_HOME:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_START_UNREG_COPS );
+                        break;
+                    case MODEM_REG_STAT_REG_SEARCHING:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_START_UNREG_COPS );
+                        break;
+                    case MODEM_REG_STAT_REG_DENIED:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_END );
+                        break;                                            
+                    case MODEM_REG_STAT_REG_ROAMING:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_START_UNREG_COPS );
+                        break;
+                    case MODEM_REG_STAT_REG_UNKNOWN:
+                    default:                        
+                        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_START_UNREG_COPS );
+                        break;                    
+                }
+                                
+                break;
+            }            
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "connect[%s] Error='%s'", 
+                    cModemConnStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "timeout" 
+                );
+                
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            }
+            break;
+        }
+
+        case MODEM_CONN_STATE_UNREG_RUN_CREG_WAIT:
+        {
+            // try again after 2 seconds waiting
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {                
+                StateMachineSetTimeOut( &gtStateMachine.tState, 2000 );
+            }
+            
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_RUN_CREG );
+            }
+            break;
+        }
+        
+        case MODEM_CONN_STATE_UNREG_END:
+        {
+            // clear network variables
+            gpModemData->tNetwork.szIp[0]           = '\0';
+            gpModemData->tNetwork.bSocketStat       = 0;
+            gpModemData->tNetwork.bSocketCntxtStat  = 0;
+            gpModemData->tNetwork.bCregStat         = 0;
+
+            gfIsConnected                    = FALSE;
+            gfConnectionTimeOutEnabled       = FALSE;
+            gdwAttemptConnectionTimeOut_mSec = 0;
+            gxTimer                          = 0;
+
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNREG_IDLE );
+            break;
+        }
+
+        default:
+        {
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONN_STATE_UNINITIALIZED );            
+            break;
+        }
+    }
+}
+
+
+ModemDataNetworkType  * ModemConnectGetInfoPtr        ( void )
+{
+    return &gpModemData->tNetwork;    
+}
+
+CHAR * ModemConnectApnGetString( ModemConnectApnEnum eModemApn )
+{
+    if( eModemApn < MODEM_CONNECT_APN_ADDRESS_MAX )
+    {
+        return (CHAR *)pcModemApnAddressList[eModemApn];
+    }
+    else
+    {
+        return NULL;
+    }
+}

@@ -1,0 +1,173 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!    \file        Watchdog.h
+//!    \brief       Watchdog module header.
+//!
+//!	   \author
+//!	   \date
+//!
+//!    \notes       Uses TIM5 as interrupt for Watchdog
+//!
+//!    \defgroup   TypeOfModule   Group Name
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Header include
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "../includesProject.h"
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// File Local Structures and macros
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// File Local Variables
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+static volatile UINT32 gdwMilliSecondCounter= 0;
+static volatile UINT32 gdwSecondCounter     = 0;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// File Local Functions
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TIM3_IRQHandler( void );
+
+///////////////////////////////// FUNCTION IMPLEMENTATION ////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//! \fn
+//!
+//! \brief
+//!
+//! \param[in]
+//!
+//! \return
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL WatchdogModuleInit( void )
+{
+    //##########################################
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    /* TIM clock enable */
+    RCC_APB1PeriphClockCmd( RCC_APB1Periph_TIM5, ENABLE );
+
+    /* Enable the TIM global Interrupt */
+    NVIC_InitStructure.NVIC_IRQChannel                      = TIM5_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority    = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority           = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd                   = ENABLE;
+
+    NVIC_Init( &NVIC_InitStructure );
+    //##########################################
+
+
+
+    //##########################################
+    // TIM5 found in APB1.
+    // From document CD00237391: timers connected to APB1 are clocked from TIMxCLK up to 60 MHz.
+
+    TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+    /* Compute the prescaler value */
+    // CCF: Counter Clock Frequency
+    // f: Bus Frequency (APB1)
+    // PSC: Prescaler
+    // formula : PSC = (f/CCF)-1
+
+
+    UINT16 PrescalerValue = (UINT16) ( (SystemCoreClock / 2) / 60000000 ) - 1;
+
+    /* Time base configuration */
+    TIM_TimeBaseStructure.TIM_Prescaler     = PrescalerValue;
+    TIM_TimeBaseStructure.TIM_Period        = 1001;
+    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+    TIM_TimeBaseStructure.TIM_CounterMode   = TIM_CounterMode_Up;
+
+    TIM_TimeBaseInit( TIM5, &TIM_TimeBaseStructure );
+    //##########################################
+
+    /* TIM Interrupts enable */
+    TIM_ITConfig( TIM5, TIM_IT_CC1, ENABLE);
+
+    // set compare to 1000 considering the counter increments every millisecond
+    TIM_SetCompare1( TIM5, 1000 );
+    TIM_SetCounter( TIM5, 0 );
+
+    /* TIM3 enable counter */
+    TIM_Cmd( TIM5, ENABLE );
+
+	return TRUE;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//! \fn
+//!
+//! \brief
+//!
+//! \param[in]
+//!
+//! \return
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void WatchdogEnable( BOOL fEnable )
+{
+
+
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//! \fn
+//!
+//! \brief
+//!
+//! \param[in]
+//!
+//! \return
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL WatchdogKickSoftwareWatchdog( UINT32 dwMilliSeconds )
+{
+
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//! \fn
+//!
+//! \brief
+//!
+//! \param[in]
+//!
+//! \return
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void TIM5_IRQHandler( void )
+{
+    if( TIM_GetITStatus( TIM5, TIM_IT_CC1 ) != RESET )
+    {
+        TIM_ClearITPendingBit( TIM5, TIM_IT_CC1 );
+
+        UINT32 capture = TIM_GetCapture1( TIM5 );
+
+        // disable counter...only count once for now
+        TIM_Cmd( TIM5, DISABLE );
+
+        capture = TIM_GetCapture1( TIM5 );
+    }
+}
+
+///////////////////////////////////////// END OF SOURCE //////////////////////////////////////////

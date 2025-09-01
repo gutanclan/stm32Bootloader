@@ -1,0 +1,67 @@
+
+typedef struct
+{
+	UINT8 bNvicIrqChannel;
+	UINT8 bNvicIrqChannelPreemptionPriority;
+	UINT8 bNvicIrqChannelSubPriority;
+}NvicConfigType;
+
+typedef enum
+{
+	NVIC_CONFIG_INVALID = 0,
+	
+	NVIC_CONFIG_USART1,
+	NVIC_CONFIG_USART2,
+	
+	NVIC_CONFIG_MAX,
+}NvicConfigEnum;
+
+
+char * const pcName[] =
+{
+	NULL,
+	
+	"usart1",
+	"usart2",
+	
+	NULL,
+}
+
+static NvicConfigType tInterruptConfigLookupArray[] =
+{
+	//	bNvicIrqChannel			bNvicIrqChannelPreemptionPriority			bNvicIrqChannelSubPriority			
+	{ 	0,						0,											0	},
+	
+	{ 	USART1_IRQn				0x00,										0x00},
+	{ 	USART2_IRQn				0x00,										0x00},
+	
+	{ 	0,						0,											0	},
+}
+
+#define NVIC_INTERRUPT_ARRAY_MAX	( sizeof(tInterruptConfigLookupArray) / sizeof( tInterruptConfigLookupArray[0] ) )
+
+void NVIC_ConfigInterrupt( NvicConfigEnum eNvicInterruption, BOOL fEnable )
+
+//////////////////////////////////////////////////////////////////////////////////
+
+void NVIC_ConfigInterrupt( NvicConfigEnum eNvicInterruption, BOOL fEnable )
+{
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+	if( eNvicInterruption < NVIC_INTERRUPT_ARRAY_MAX )
+	{
+		NVIC_InitStructure.NVIC_IRQChannel 						= tInterruptConfigLookupArray[eNvicInterruption].bNvicIrqChannel;
+		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority 	= tInterruptConfigLookupArray[eNvicInterruption].bNvicIrqChannelPreemptionPriority;
+		NVIC_InitStructure.NVIC_IRQChannelSubPriority 			= tInterruptConfigLookupArray[eNvicInterruption].bNvicIrqChannelSubPriority;
+		if( fEnable )
+		{
+			NVIC_InitStructure.NVIC_IRQChannelCmd 					= ENABLE;
+		}
+		else
+		{
+			NVIC_InitStructure.NVIC_IRQChannelCmd 					= DISABLE;
+		}
+		
+		NVIC_Init( &NVIC_InitStructure );
+	}
+}

@@ -1,0 +1,570 @@
+/** C Header ******************************************************************
+
+*******************************************************************************/
+
+#include <assert.h>
+#include <string.h>     /* memset() */
+#include <stdio.h>      /* printf() */
+#include <ctype.h>      /* isprint() */
+#include <stdlib.h>
+
+#include <stdarg.h>         // For va_arg support
+
+#include "Types.h"
+
+// PCOM Project Targets
+#include "Target.h"             // Hardware target specifications
+
+#include "Asc.h"
+#include "Config.h"
+#include "Debug.h"
+#include "General.h"
+#include "Gpio.h"
+
+//#include "Modem.h"
+//#include "Module.h"     /* Common task control structure definition */
+#include "StringTable.h"
+#include "Timer.h"
+#include "Usart.h"
+#include "Datalog.h"
+#include "Control.h"
+#include "Console.h"
+
+#include "ModemPower.h"
+#include "ModemConfig.h"
+#include "../ModemData.h"
+#include "../ModemCommandResponse/Modem.h"
+#include "../ModemCommandResponse/ModemCommand.h"
+#include "../ModemCommandResponse/ModemResponse.h"
+#include "../../Utils/StateMachine.h"
+
+typedef enum
+{
+    MODEM_CONFIG_STATE_UNINITIALIZED = 0,
+    
+    MODEM_CONFIG_STATE_DISABLED,
+    MODEM_CONFIG_STATE_IDLE,
+    
+    MODEM_CONFIG_STATE_START,
+    MODEM_CONFIG_STATE_RUN_FACTORY_DEFAULT,
+    MODEM_CONFIG_STATE_RUN_FACTORY_DEFAULT_WAIT,
+    MODEM_CONFIG_STATE_RUN_ECHO_OFF,
+    MODEM_CONFIG_STATE_RUN_DTR_OFF,
+    MODEM_CONFIG_STATE_RUN_SET_ERROR_CODE_TYPE,
+    MODEM_CONFIG_STATE_RUN_SET_SIM_STATUS_ON,
+    
+    MODEM_CONFIG_STATE_PASS,
+    MODEM_CONFIG_STATE_FAIL,
+    MODEM_CONFIG_STATE_END,
+    
+    MODEM_CONFIG_STATE_MAX,
+}ModemPowerStateEnum;
+
+const CHAR *    cModemConfigStateMachineName[MODEM_CONFIG_STATE_MAX] = 
+{
+    "UNINITIALIZED",
+    
+    "Config Disabled",
+    "Config Idle",
+    
+    "Config Start",
+    "Factory Default",
+    "Factory Default wait",
+    "Echo Off",
+    "DTR Off",
+    "Set Error Code Type",
+    "Set Sim stat on",
+    
+    "Config Pass",
+    "Config Fail",
+    "Config End",
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// unique from this module
+static BOOL                     gfIsConfigured;
+
+// operation
+static BOOL                     gfIsWaitingForNewCommand;
+static ModemStateMachineType    gtStateMachine;
+static ModemCommandSemaphoreEnum geSemaphore;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemConfigInit( void )
+{
+    // set state machine to a initial state.
+    StateMachineInit( &gtStateMachine.tState );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemConfigRun( void )
+{
+    if( gfIsWaitingForNewCommand )
+    {
+        // indicate command will start running so more commands are not accepted
+        gfIsWaitingForNewCommand = FALSE;
+        
+        StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_START );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL ModemConfigIsWaitingForCommand( void )
+{
+    return gfIsWaitingForNewCommand;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL ModemConfigIsSuccess( void )
+{
+    return gfIsConfigured;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemConfigStateMachine( void )
+{
+    StateMachineUpdate( &gtStateMachine.tState );
+
+    if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+    {
+        // print message that power is on
+        ModemConsolePrintDbg( "MDM SM <%s>", cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent] );        
+    }
+
+    switch( gtStateMachine.tState.bStateCurrent )
+    {        
+        case MODEM_CONFIG_STATE_UNINITIALIZED :
+        {
+            // go to waiting for operation to run
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_DISABLED );
+            break;
+        }
+            
+        case MODEM_CONFIG_STATE_DISABLED:
+        {
+            //////////////////////////////////////////////////
+            // DISABLED
+            // not allowed to run config operation
+            //////////////////////////////////////////////////        
+            gfIsConfigured = FALSE;
+            gfIsWaitingForNewCommand    = FALSE;
+        
+            if( ModemPowerIsPowerEnabled() )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_IDLE );
+            }
+            break;
+        }
+        
+        case MODEM_CONFIG_STATE_IDLE:
+        {
+            //////////////////////////////////////////////////
+            // IDLE
+            // waiting for new operation request
+            //////////////////////////////////////////////////
+
+            gfIsWaitingForNewCommand    = TRUE;
+            
+            if( ModemPowerIsPowerEnabled() == FALSE )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_DISABLED );
+            }
+            break;
+        }
+         
+        case MODEM_CONFIG_STATE_START:
+        {
+            gfIsConfigured = FALSE;
+            
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_RUN_FACTORY_DEFAULT );
+            break;
+        }
+        
+        case MODEM_CONFIG_STATE_RUN_FACTORY_DEFAULT:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    ModemCommandProcessorSendAtCommand( "&F0" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "config[%s] Error='%s'", 
+                        cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_RUN_FACTORY_DEFAULT_WAIT );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }            
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "config[%s] Error='%s'", 
+                    cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "time out" 
+                );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+            }
+            break;
+        }
+        
+        case MODEM_CONFIG_STATE_RUN_FACTORY_DEFAULT_WAIT:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {                
+                // if need to wait for response set time out
+                StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+            }
+            
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {                
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_RUN_ECHO_OFF );
+            }
+            break;
+        }
+
+        case MODEM_CONFIG_STATE_RUN_ECHO_OFF:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    ModemCommandProcessorSendAtCommand( "E0" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "config[%s] Error='%s'", 
+                        cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                    break;
+                }                        
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_RUN_DTR_OFF );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }            
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "config[%s] Error='%s'", 
+                    cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "timeout" 
+                );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+            }
+            break;
+        }
+            
+        case MODEM_CONFIG_STATE_RUN_DTR_OFF:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    ModemCommandProcessorSendAtCommand( "&D0" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "config[%s] Error='%s'", 
+                        cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                    break;
+                }
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_RUN_SET_ERROR_CODE_TYPE );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "config[%s] Error='%s'", 
+                    cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "time out" 
+                );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+            }
+            break;
+        }
+        
+        case MODEM_CONFIG_STATE_RUN_SET_ERROR_CODE_TYPE:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    ModemCommandProcessorSendAtCommand( "+CMEE=2" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "config[%s] Error='%s'", 
+                        cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                    break;
+                }
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_RUN_SET_SIM_STATUS_ON );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "config[%s] Error='%s'", 
+                    cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "timeout" 
+                );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+            }
+            break;
+        }
+
+        case MODEM_CONFIG_STATE_RUN_SET_SIM_STATUS_ON:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();
+                    ModemCommandProcessorSetExpectedResponse( FALSE, NULL, 0, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1000 );
+                    ModemCommandProcessorSendAtCommand( "#QSS=1" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "config[%s] Error='%s'", 
+                        cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                    break;
+                }
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                if( ModemCommandProcessorIsError() )
+                {
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+                }
+                else
+                {                
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_PASS );
+                }
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "config[%s] Error='%s'", 
+                    cModemConfigStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "timeout" 
+                );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_FAIL );
+            }
+            break;
+        }
+            
+        case MODEM_CONFIG_STATE_PASS:
+        {        
+            gfIsConfigured = TRUE;
+            
+            ModemConsolePrintf("Set Modem Configuration Pass\r\n");
+            
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_END );
+            break;
+        }
+        
+        case MODEM_CONFIG_STATE_FAIL:
+        {
+            gfIsConfigured = FALSE;
+            
+            ModemConsolePrintf("Set Modem Configuration Fail\r\n");
+
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_END );
+            break;
+        }
+        
+        case MODEM_CONFIG_STATE_END:
+        {
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_IDLE );
+            
+            break;
+        }
+                   
+        default:
+        {
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_CONFIG_STATE_UNINITIALIZED );            
+            break;
+        }
+    }
+}

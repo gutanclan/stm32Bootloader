@@ -1,0 +1,48 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!    \file        queue.h
+//!    \brief       queue module header.
+//!
+//!	   \author
+//!	   \date
+//!
+//!    \notes
+//!
+//!    \defgroup   TypeOfModule   Group Name
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifndef _QUEUE_H_
+#define _QUEUE_H_
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Defines
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+typedef enum
+{
+	QUEUE_USART3_RX  = 0,
+	QUEUE_USART3_TX,
+
+	QUEUE_MAX,	            // Total Number of QUEUES defined
+}QueueEnum;
+
+#define     QUEUE_INVALID_QUEUE    (QUEUE_MAX)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Public Functions
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+BOOL    QueueModuleInit             ( void );
+BOOL    QueueSend                   ( QueueEnum eQueue, const void * pvItemToQueue );
+BOOL    QueueReceive                ( QueueEnum eQueue, void * pvItemReceiver, UINT32 dwItemSize );
+BOOL    QueuePeek                   ( QueueEnum eQueue, void * pvItemReceiver, UINT32 dwItemSize );
+BOOL    QueueReset                  ( QueueEnum eQueue );
+UINT32  QueueGetItemsMax            ( QueueEnum eQueue );
+UINT32  QueueGetItemsWaiting        ( QueueEnum eQueue );
+
+void    QueueTest                   ( void );
+
+#endif // _QUEUE_H_
+
+///////////////////////////////////////// END OF HEADER //////////////////////////////////////////

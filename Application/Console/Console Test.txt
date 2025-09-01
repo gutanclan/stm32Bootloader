@@ -1,0 +1,31 @@
+> gpio help
+[ConsoleMain] EXECUTING [gpio help]
+
+GPIO Commands:
+---------------------
+GPIO STAT                     - Shows the status of all digital inputs and outputs
+GPIO STAT <PortLetter> <Pin#> - Shows the status of a single pin
+GPIO PORT <PortLetter>        - Shows the status of the pins mapped in the Gpio module and that belogn to the defined port<LETTER> (e.g. PORT A)
+GPIO CONT PORT <PortLetter> [PERIOD] - Print Logic Level (0=LOW 1=HIGH) continuously at portLetter every PERIOD milliseconds
+                default PERIOD = 1000 ms{Min = 10 ms}
+GPIO CONT SINGLE <PortLetter> <Pin#> [PERIOD] - Print the Logic Level (0=LOW 1=HIGH) of a single GPIO pin every PERIOD milliseconds
+                default PERIOD = 1000 ms{Min = 10 ms}
+GPIO GET  <PortLetter> <Pin#>  - Get the pin Logic level (only if Mode is INPUT, OUTPUT or AF)
+GPIO SET  <PortLetter> <Pin#> <1 | 0>  - Set an OUTPUT pin HIGH or LOW (1=HIGH, 0=LOW)
+GPIO MODE <PortLetter> <Pin#> <MODE#> - Set pin as INPUT, OUTPUT, ALTERNATIVE FUNCTION(AF) OR ANALOG
+          MODE #0 = INPUT
+          MODE #1 = OUTPUT
+          MODE #2 = AF     (Not supported by all pins. Check Datasheet)
+          MODE #3 = ANALOG (Not supported by all pins. Check Datasheet)
+GPIO OTYPE <PortLetter> <Pin#> <OTYPE#> -
+          OTYPE #0 = PushPull
+          OTYPE #1 = OpenDrian
+GPIO PUPD <PortLetter> <Pin#> <PUPD#> -
+          PUPD #0 = No Pull
+          PUPD #1 = Pull-up
+          PUPD #2 = Pull-down
+GPIO TEST <A:PortLetter> <A:Pin#> <1 | 0> <Delay> <B:PortLetter> <B:Pin#> <1 | 0> -
+
+Result: 0x00, 'OK'
+
+>

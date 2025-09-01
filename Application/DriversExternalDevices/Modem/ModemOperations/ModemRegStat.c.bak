@@ -1,0 +1,299 @@
+/** C Header ******************************************************************
+
+*******************************************************************************/
+
+#include <assert.h>
+#include <string.h>     /* memset() */
+#include <stdio.h>      /* printf() */
+#include <ctype.h>      /* isprint() */
+#include <stdlib.h>
+
+#include <stdarg.h>         // For va_arg support
+
+#include "Types.h"
+
+// PCOM Project Targets
+#include "Target.h"             // Hardware target specifications
+
+#include "Asc.h"
+#include "Config.h"
+#include "Debug.h"
+#include "General.h"
+#include "Gpio.h"
+#include "Led.h"
+//#include "Modem.h"
+//#include "Module.h"     /* Common task control structure definition */
+#include "StringTable.h"
+#include "Timer.h"
+#include "Usart.h"
+#include "Datalog.h"
+#include "Control.h"
+#include "Console.h"
+
+#include "ModemPower.h"
+#include "ModemConnect.h"
+#include "ModemRegStat.h"
+#include "../ModemData.h"
+#include "../ModemCommandResponse/Modem.h"
+#include "../ModemCommandResponse/ModemCommand.h"
+#include "../ModemCommandResponse/ModemResponse.h"
+#include "../../Utils/StateMachine.h"
+
+typedef enum
+{
+    MODEM_REG_STAT_STATE_UNINITIALIZED = 0,
+    
+    MODEM_REG_STAT_STATE_DISABLED,
+    MODEM_REG_STAT_STATE_IDLE,
+    
+    MODEM_REG_STAT_STATE_START,
+    MODEM_REG_STAT_STATE_RUN_CREG,
+    MODEM_REG_STAT_STATE_RUN_CREG_FAIL,
+    
+    MODEM_REG_STAT_STATE_MAX,
+}ModemRegStatStateEnum;
+
+const CHAR *    cModemRegStatStateMachineName[MODEM_REG_STAT_STATE_MAX] = 
+{
+    "UNINITIALIZED",
+    
+    "RegStat Disabled",
+    "RegStat Idle",
+    
+    "RegStat Start",
+    "RegStat creg",
+    "RegStat creg fail",
+};
+
+const CHAR *    cModemRegStatusName[MODEM_REG_STAT_MAX] = 
+{
+    "No Reg",
+    "Reg Home",
+    "Reg Searching...",
+    "Reg Denied",
+    "Reg Unknown",
+    "Reg Roaming",
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// unique from this module
+
+
+//
+static ModemDataType           *gpModemData;
+
+// operation
+static BOOL                     gfIsWaitingForNewCommand;
+static ModemStateMachineType    gtStateMachine;
+static ModemCommandSemaphoreEnum geSemaphore;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemRegStatInit( void )
+{
+    // set state machine to a initial state.
+    StateMachineInit( &gtStateMachine.tState );
+    
+    
+    gpModemData = ModemResponseModemDataGetPtr();
+    
+    if( gpModemData == NULL )
+    {
+        // catch this bug on development time
+        while(1);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemRegStatCheckRun( void )
+{
+    if( gfIsWaitingForNewCommand )
+    {
+        // indicate command will start running so more commands are not accepted
+        gfIsWaitingForNewCommand = FALSE;
+        
+        StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_START );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+BOOL ModemRegStatIsWaitingForCommand( void )
+{
+    return gfIsWaitingForNewCommand;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+ModemRegStatEnum ModemRegStatGetStatus( void )
+{
+    return gpModemData->tNetwork.bCregStat;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!
+//////////////////////////////////////////////////////////////////////////////////////////////////
+void ModemRegStatStateMachine( void )
+{
+    StateMachineUpdate( &gtStateMachine.tState );
+
+    if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+    {
+        // print state machine state
+        ModemConsolePrintDbg( "MDM SM <%s>", cModemRegStatStateMachineName[gtStateMachine.tState.bStateCurrent] );        
+    }
+
+    switch( gtStateMachine.tState.bStateCurrent )
+    {
+        case MODEM_REG_STAT_STATE_UNINITIALIZED :
+        {
+            // go to waiting for operation to run
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_DISABLED );
+            break;
+        }
+            
+        case MODEM_REG_STAT_STATE_DISABLED:
+        {
+            //////////////////////////////////////////////////
+            // DISABLED
+            // not allowed to run operation
+            //////////////////////////////////////////////////
+        
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                gpModemData->tNetwork.bCregStat = 0;
+            }
+
+            gfIsWaitingForNewCommand     = FALSE;
+        
+            if( ModemPowerIsPowerEnabled() )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_IDLE );
+            }
+            break;
+        }
+        
+        case MODEM_REG_STAT_STATE_IDLE:
+        {
+            //////////////////////////////////////////////////
+            // IDLE
+            // waiting for new operation request
+            //////////////////////////////////////////////////
+
+            gfIsWaitingForNewCommand    = TRUE;
+            
+            if( ModemPowerIsPowerEnabled() == FALSE )
+            {
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_DISABLED );
+            }
+            break;
+        }
+         
+        case MODEM_REG_STAT_STATE_START:
+        {
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_RUN_CREG );
+            break;
+        }
+        
+        case MODEM_REG_STAT_STATE_RUN_CREG:
+        {
+            if( StateMachineIsFirtEntry( &gtStateMachine.tState ) )
+            {
+                if( ModemCommandProcessorReserve( &geSemaphore ) )
+                {
+                    ModemCommandProcessorResetResponse();
+                    ModemCommandProcessorSetExpectedResponse( TRUE, "+CREG:", 1, TRUE );
+                    
+                    // if need to wait for response set time out
+                    StateMachineSetTimeOut( &gtStateMachine.tState, 1500 );
+                    ModemCommandProcessorSendAtCommand( "+CREG?" );
+                }
+                else
+                {
+                    // Set ERROR
+                    ModemEventLog
+                (
+                    TRUE,
+                        "regStat[%s] Error='%s'", 
+                        cModemRegStatStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                        "semaphore busy" 
+                    );
+
+                    // before change state always release semaphore
+                    ModemCommandProcessorRelease( &geSemaphore );
+                    StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_RUN_CREG_FAIL );
+                    break;
+                }
+            }
+            
+            if( ModemCommandProcessorIsResponseComplete() )
+            {                
+                // validate response
+                if( gpModemData->tNetwork.bCregStat > MODEM_REG_STAT_MAX )
+                {
+                    gpModemData->tNetwork.bCregStat = MODEM_REG_STAT_NO_REG;
+                }
+                
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_IDLE );
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                break;
+            }
+            
+            if( StateMachineIsTimeOut( &gtStateMachine.tState ) ) 
+            {
+                // Set ERROR
+                ModemEventLog
+                (
+                    TRUE,
+                    "regStat[%s] Error='%s'", 
+                    cModemRegStatStateMachineName[gtStateMachine.tState.bStateCurrent], 
+                    "timeout" 
+                );
+
+                // before change state always release semaphore
+                ModemCommandProcessorRelease( &geSemaphore );
+                StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_RUN_CREG_FAIL );
+            }
+            break;
+        }
+        
+        case MODEM_REG_STAT_STATE_RUN_CREG_FAIL:
+        {
+            gpModemData->tNetwork.bCregStat = MODEM_REG_STAT_NO_REG;
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_IDLE );
+            break;
+        }
+
+        default:
+        {
+            StateMachineChangeState( &gtStateMachine.tState, MODEM_REG_STAT_STATE_UNINITIALIZED );            
+            break;
+        }
+    }
+}
+
+CHAR * ModemRegStatGetStatusString( ModemRegStatEnum eRegStat )
+{
+    if( eRegStat < MODEM_REG_STAT_MAX )
+    {
+        return (CHAR *)&cModemRegStatusName[eRegStat][0];
+    }
+    else
+    {
+        return (CHAR *)&cModemRegStatusName[MODEM_REG_STAT_REG_UNKNOWN][0];
+    }
+}

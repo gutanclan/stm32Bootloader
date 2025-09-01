@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<EmBitz_project_file>
+	<EmBitzVersion release="2.64" revision="0" />
+	<FileVersion major="2" minor="0" />
+	<Project>
+		<Option title="test" />
+		<Option pch_mode="2" />
+		<Option compiler="armgcc_eb" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin\Debug\test.elf" />
+				<Option object_output="obj\Debug\" />
+				<Option type="0" />
+				<Option create_hex="1" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-std=gnu99" />
+					<Add option="-Wall" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+					<Add option="-O0" />
+					<Add option="-g3" />
+					<Add option="-u_printf_float" />
+				</Compiler>
+				<Assembler>
+					<Add option="-Wa,--gdwarf-2" />
+				</Assembler>
+				<Linker>
+					<Add option="-eb_use_semi" />
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\test.elf" />
+				<Option object_output="obj\Release\" />
+				<Option type="0" />
+				<Option create_hex="1" />
+				<Option compiler="armgcc_eb" />
+				<Option projectDeviceOptionsRelation="0" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-g2" />
+					<Add option="-fdata-sections" />
+					<Add option="-ffunction-sections" />
+				</Compiler>
+				<Assembler>
+					<Add option="-Wa,--no-warn" />
+				</Assembler>
+				<Linker>
+					<Add option="-Wl,--gc-sections" />
+				</Linker>
+			</Target>
+		</Build>
+		<Device>
+			<Add option="$device=cortex-m3" />
+			<Add option="$lscript=./stm32f207vc_flash.ld" />
+			<Add option="$stack=0x1000" />
+			<Add option="$heap=0x2000" />
+		</Device>
+		<Compiler>
+			<Add option="-mfloat-abi=soft" />
+			<Add option="-fno-strict-aliasing" />
+			<Add symbol="ARM_MATH_CM3" />
+			<Add symbol="HSI_VALUE=16000000" />
+			<Add symbol="HSE_VALUE=8000000" />
+			<Add symbol="STM32F2X7" />
+			<Add symbol="STM32F207VC" />
+			<Add symbol="STM32F2XX" />
+			<Add symbol="USE_STDPERIPH_DRIVER" />
+			<Add symbol="PROJECT_C" />
+			<Add directory=".\inc" />
+			<Add directory=".\src" />
+			<Add directory=".\cmsis" />
+			<Add directory=".\SPL\inc" />
+			<Add directory=".\SPL\src" />
+		</Compiler>
+		<Linker>
+			<Add option="-eb_start_files" />
+			<Add option="-eb_lib=n" />
+		</Linker>
+		<Unit filename="Application\Console\Command\command.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Console\Command\command.h" />
+		<Unit filename="Application\Console\console.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Console\console.h" />
+		<Unit filename="Application\Console\print.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Console\print.h" />
+		<Unit filename="Application\Console\strLineEditor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Console\strLineEditor.h" />
+		<Unit filename="Application\Console\strLineEditor.ods" />
+		<Unit filename="Application\Console\strQueueCir.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Console\strQueueCir.h" />
+		<Unit filename="Application\DriversExternalDevices\FlashMem\NandSimu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversExternalDevices\FlashMem\NandSimu.h" />
+		<Unit filename="Application\DriversMcuPeripherals\adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\adc.h" />
+		<Unit filename="Application\DriversMcuPeripherals\BkpSram.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\BkpSram.h" />
+		<Unit filename="Application\DriversMcuPeripherals\gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\gpio.h" />
+		<Unit filename="Application\DriversMcuPeripherals\rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\rtc.h" />
+		<Unit filename="Application\DriversMcuPeripherals\rtcBackupReg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\rtcBackupReg.h" />
+		<Unit filename="Application\DriversMcuPeripherals\spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\spi.h" />
+		<Unit filename="Application\DriversMcuPeripherals\sysTick.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\sysTick.h" />
+		<Unit filename="Application\DriversMcuPeripherals\usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\DriversMcuPeripherals\usart.h" />
+		<Unit filename="Application\File\FileDir.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\File\FileDir.h" />
+		<Unit filename="Application\File\FileHeader.h" />
+		<Unit filename="Application\File\FileWriteRef.h" />
+		<Unit filename="Application\IoStream\ioStream.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\IoStream\ioStream.h" />
+		<Unit filename="Application\Memory\Flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Memory\Flash.h" />
+		<Unit filename="Application\Memory\FlashMemMap.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Memory\FlashMemMap.h" />
+		<Unit filename="Application\Net\yModem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Net\yModem.h" />
+		<Unit filename="Application\Serial\serial.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Serial\serial.h" />
+		<Unit filename="Application\System\DevInfo.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\System\DevInfo.h" />
+		<Unit filename="Application\System\SysBoot.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\System\SysBoot.h" />
+		<Unit filename="Application\System\SysTime.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\System\SysTime.h" />
+		<Unit filename="Application\Targets\Target_CurrentTarget.h" />
+		<Unit filename="Application\Targets\Target_Project_Open_207V_C.h" />
+		<Unit filename="Application\Utils\adcUtils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Utils\adcUtils.h" />
+		<Unit filename="Application\Utils\crc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Utils\crc.h" />
+		<Unit filename="Application\Utils\queue.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Utils\queue.h" />
+		<Unit filename="Application\Utils\queueDataTypes.h" />
+		<Unit filename="Application\Utils\semaphore.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Utils\semaphore.h" />
+		<Unit filename="Application\Utils\stateMachine.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Utils\stateMachine.h" />
+		<Unit filename="Application\Utils\stringUtils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Utils\stringUtils.h" />
+		<Unit filename="Application\Utils\timer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Utils\timer.h" />
+		<Unit filename="Application\Utils\types.h" />
+		<Unit filename="cmsis\core_cm3.h" />
+		<Unit filename="cmsis\core_cmFunc.h" />
+		<Unit filename="cmsis\core_cmInstr.h" />
+		<Unit filename="inc\stm32f2xx.h" />
+		<Unit filename="inc\stm32f2xx_conf.h" />
+		<Unit filename="inc\system_stm32f2xx.h" />
+		<Unit filename="readme.txt" />
+		<Unit filename="SPL\inc\misc.h" />
+		<Unit filename="SPL\inc\stm32f2xx_adc.h" />
+		<Unit filename="SPL\inc\stm32f2xx_can.h" />
+		<Unit filename="SPL\inc\stm32f2xx_crc.h" />
+		<Unit filename="SPL\inc\stm32f2xx_cryp.h" />
+		<Unit filename="SPL\inc\stm32f2xx_dac.h" />
+		<Unit filename="SPL\inc\stm32f2xx_dbgmcu.h" />
+		<Unit filename="SPL\inc\stm32f2xx_dcmi.h" />
+		<Unit filename="SPL\inc\stm32f2xx_dma.h" />
+		<Unit filename="SPL\inc\stm32f2xx_exti.h" />
+		<Unit filename="SPL\inc\stm32f2xx_flash.h" />
+		<Unit filename="SPL\inc\stm32f2xx_fsmc.h" />
+		<Unit filename="SPL\inc\stm32f2xx_gpio.h" />
+		<Unit filename="SPL\inc\stm32f2xx_hash.h" />
+		<Unit filename="SPL\inc\stm32f2xx_i2c.h" />
+		<Unit filename="SPL\inc\stm32f2xx_iwdg.h" />
+		<Unit filename="SPL\inc\stm32f2xx_pwr.h" />
+		<Unit filename="SPL\inc\stm32f2xx_rcc.h" />
+		<Unit filename="SPL\inc\stm32f2xx_rng.h" />
+		<Unit filename="SPL\inc\stm32f2xx_rtc.h" />
+		<Unit filename="SPL\inc\stm32f2xx_sdio.h" />
+		<Unit filename="SPL\inc\stm32f2xx_spi.h" />
+		<Unit filename="SPL\inc\stm32f2xx_syscfg.h" />
+		<Unit filename="SPL\inc\stm32f2xx_tim.h" />
+		<Unit filename="SPL\inc\stm32f2xx_usart.h" />
+		<Unit filename="SPL\inc\stm32f2xx_wwdg.h" />
+		<Unit filename="SPL\src\misc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_adc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_can.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_crc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_cryp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_cryp_aes.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_cryp_des.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_cryp_tdes.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_dac.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_dbgmcu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_dcmi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_dma.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_exti.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_flash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_fsmc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_gpio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_hash.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_hash_md5.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_hash_sha1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_i2c.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_iwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_pwr.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_rcc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_rng.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_rtc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_sdio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_spi.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_syscfg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_tim.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_usart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="SPL\src\stm32f2xx_wwdg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\startup_stm32f2xx.S">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\system_stm32f2xx.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stm32f207vc_flash.ld" />
+		<Unit filename="stm32f207vc_sram.ld" />
+		<Extensions>
+			<code_completion />
+			<debugger>
+				<target_debugging_settings target="Debug">
+					<debug_interface description="STM32F20x.svd" options="2" reg_filter="0" probe="STlink" device="auto" speed="" bus_address="" serial="" defines="" scripts="" flash_size="" ram_size="" vcc_voltage="" verbose="4" unwind="2" rstType="0" use_jtag="false" disable_cache="false" enable_semi="false" close_eblink="false" gdb_reset="" gdb_reset_remote="" gdb_before_conn="" gdb_after_conn="" use_remote="false" ip_address="" ip_port="" path="" executable="" start_server="false" arguments="" flash_verify="false" flash_run="false" />
+				</target_debugging_settings>
+				<target_debugging_settings target="Release">
+					<debug_interface description="STM32F20x.svd" options="2" reg_filter="0" probe="STlink" device="auto" speed="" bus_address="" serial="" defines="" scripts="" flash_size="" ram_size="" vcc_voltage="" verbose="4" unwind="2" rstType="0" use_jtag="false" disable_cache="false" enable_semi="false" close_eblink="false" gdb_reset="" gdb_reset_remote="" gdb_before_conn="" gdb_after_conn="" use_remote="false" ip_address="" ip_port="" path="" executable="" start_server="false" arguments="" flash_verify="false" flash_run="false" />
+				</target_debugging_settings>
+			</debugger>
+			<envvars />
+		</Extensions>
+	</Project>
+</EmBitz_project_file>
