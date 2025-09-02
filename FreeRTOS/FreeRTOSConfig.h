@@ -28,7 +28,7 @@
 #define configTICK_RATE_HZ                       ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES                     ( 7 )
 #define configMINIMAL_STACK_SIZE                 ( ( unsigned short ) 128 )
-#define configTOTAL_HEAP_SIZE                    ( ( size_t ) ( 75 * 1024 ) )
+#define configTOTAL_HEAP_SIZE                    ( ( size_t ) 15360 )
 #define configMAX_TASK_NAME_LEN                  ( 16 )
 #define configUSE_TRACE_FACILITY                 1
 #define configUSE_16_BIT_TICKS                   0
@@ -95,11 +95,7 @@ standard names. */
 #define vPortSVCHandler    SVC_Handler
 #define xPortPendSVHandler PendSV_Handler
 
-/* Define the SysTick handler for STM32F207VC */
+/* IMPORTANT: Enable standard FreeRTOS V10.0.0 SysTick handler */
 #define xPortSysTickHandler SysTick_Handler
-
-/* Prevent port.c from defining interrupt handlers - they are defined in FreeRTOSHandlers.c */
-#define configOVERRIDE_DEFAULT_TICK_CONFIGURATION 1
-#define configUSE_CUSTOM_INTERRUPT_HANDLERS 1
 
 #endif /* FREERTOS_CONFIG_H */

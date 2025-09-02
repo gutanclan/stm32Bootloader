@@ -3456,7 +3456,7 @@
 	"spi.h"
 	"../Utils/timer.h"
 
-1756774320 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\systick.c
+1756775649 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\systick.c
 	"../inc/stm32f2xx_conf.h"
 	"../Utils/Types.h"
 
@@ -3761,7 +3761,7 @@
 1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_wwdg.h
 	"stm32f2xx.h"
 
-1756774327 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\src\main.c
+1756787870 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\src\main.c
 	<string.h>
 	<stdio.h>
 	<stdlib.h>
@@ -3784,6 +3784,9 @@
 	"../Application/Console/Command/command.h"
 	"../Application/System/SysBoot.h"
 	"../Application/System/SysTime.h"
+	"../FreeRTOS/include/FreeRTOS.h"
+	"../FreeRTOS/include/task.h"
+	"../Application/Apps/FreeRTOSHandlers.h"
 
 1404577760 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\systick.h
 
@@ -3805,7 +3808,7 @@
 	"portable.h"
 	<reent.h>
 
-1756774503 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\freertosconfig.h
+1756786146 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\freertosconfig.h
 	<stdint.h>
 
 1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\projdefs.h
@@ -3952,8 +3955,10 @@
 	"queue.h"
 	"timers.h"
 
-1756774568 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\apps\freertoshandlers.c
+1756786373 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\apps\freertoshandlers.c
 	"FreeRTOS.h"
 	"task.h"
 	"portmacro.h"
+
+1756774312 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\apps\freertoshandlers.h
 

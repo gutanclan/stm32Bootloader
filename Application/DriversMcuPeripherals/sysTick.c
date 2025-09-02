@@ -61,6 +61,10 @@ BOOL SysTickModuleInit( void )
 
     // set the sys tick to interrupt every 1 ms.
     SysTick_Config( SystemCoreClock / SYS_TICK_TICKS_PER_SECOND );
+    
+    // Set SysTick priority to be compatible with FreeRTOS
+    // Priority must be >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY (5)
+    NVIC_SetPriority(SysTick_IRQn, 15);  // Lowest priority
 
     return FALSE;
 }
