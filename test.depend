@@ -3222,3 +3222,738 @@
 1400501476 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject2\src\system_stm32f2xx.c
 	"stm32f2xx.h"
 
+1499754300 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\command\command.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	"../../Utils/types.h"
+	"../../Utils/timer.h"
+	"../../Utils/adcUtils.h"
+	"../../Utils/stringUtils.h"
+	"command.h"
+	"../../DriversMcuPeripherals/gpio.h"
+	"../../DriversMcuPeripherals/adc.h"
+	"../../DriversMcuPeripherals/Usart.h"
+	"../../DriversMcuPeripherals/spi.h"
+	"../../DriversMcuPeripherals/rtc.h"
+	"../../DriversMcuPeripherals/rtcBackupReg.h"
+	"../../DriversMcuPeripherals/BkpSram.h"
+	"../../DriversExternalDevices/FlashMem/NandSimu.h"
+	"../../Memory/Flash.h"
+	"../../Memory/FlashMemMap.h"
+	"../../File/FileHeader.h"
+	"../../File/FileDir.h"
+	"../../System/DevInfo.h"
+	"../../Serial/serial.h"
+	"../../IoStream/ioStream.h"
+	"../../Net/yModem.h"
+	"../../System/SysBoot.h"
+	"../../System/SysTime.h"
+
+1398583664 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\types.h
+
+1414898900 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\timer.h
+
+1479190840 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\adcutils.h
+
+1477036218 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\stringutils.h
+
+1476853742 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\command\command.h
+	"../console.h"
+
+1476857372 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\console.h
+
+1458099132 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\gpio.h
+
+1479194784 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\adc.h
+
+1479554898 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\usart.h
+
+1464066182 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\spi.h
+
+1424244262 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\rtc.h
+
+1477548188 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\rtcbackupreg.h
+
+1496386918 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\bkpsram.h
+
+1499751638 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversexternaldevices\flashmem\nandsimu.h
+
+1499754000 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\memory\flash.h
+
+1498457828 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\memory\flashmemmap.h
+
+1499404538 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\file\fileheader.h
+	"types.h"
+
+1500962068 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\file\filedir.h
+
+1424310912 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\system\devinfo.h
+
+1479555094 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\serial\serial.h
+	"../DriversMcuPeripherals/usart.h"
+	"../DriversMcuPeripherals/gpio.h"
+
+1460445496 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\iostream\iostream.h
+
+1476771510 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\net\ymodem.h
+
+1477551274 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\system\sysboot.h
+
+1496301896 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\system\systime.h
+
+1496325082 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\console.c
+	<stdio.h>
+	<stdarg.h>
+	<string.h>
+	"../Utils/Types.h"
+	"../Utils/Semaphore.h"
+	"../Utils/timer.h"
+	"../DriversMcuPeripherals/rtc.h"
+	"../DriversMcuPeripherals/usart.h"
+	"../IoStream/ioStream.h"
+	"print.h"
+	"../Utils/stringUtils.h"
+	"strQueueCir.h"
+	"strLineEditor.h"
+	"./Command/command.h"
+	"console.h"
+
+1496732284 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\semaphore.h
+
+1461215768 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\print.h
+
+1415471108 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\strqueuecir.h
+
+1458970334 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\strlineeditor.h
+
+1463100698 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\print.c
+	<string.h>
+	<stdarg.h>
+	<stdio.h>
+	"../Utils/Types.h"
+	"../DriversMcuPeripherals/Rtc.h"
+	"../IoStream/ioStream.h"
+	"./print.h"
+
+1458970826 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\strlineeditor.c
+	<string.h>
+	"../Utils/Types.h"
+	"./strLineEditor.h"
+
+1461221766 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\console\strqueuecir.c
+	<string.h>
+	"../Utils/Types.h"
+	"./strQueueCir.h"
+
+1499752638 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversexternaldevices\flashmem\nandsimu.c
+	<string.h>
+	"types.h"
+	"NandSimu.h"
+	"../../Utils/semaphore.h"
+
+1479196950 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\adc.c
+	"../inc/stm32f2xx_conf.h"
+	"../Utils/types.h"
+	"../Utils/Queue.h"
+	"../Targets/Target_CurrentTarget.h"
+	"./gpio.h"
+	"./adc.h"
+
+1496384678 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\inc\stm32f2xx_conf.h
+	"stm32f2xx_adc.h"
+	"stm32f2xx_gpio.h"
+	"stm32f2xx_pwr.h"
+	"stm32f2xx_rcc.h"
+	"stm32f2xx_rtc.h"
+	"stm32f2xx_spi.h"
+	"stm32f2xx_usart.h"
+	"misc.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_adc.h
+	"stm32f2xx.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\inc\stm32f2xx.h
+	"core_cm3.h"
+	"system_stm32f2xx.h"
+	<stdint.h>
+	"stm32f2xx_conf.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\cmsis\core_cm3.h
+	<stdint.h>
+	<core_cmInstr.h>
+	<core_cmFunc.h>
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\cmsis\core_cminstr.h
+	<cmsis_iar.h>
+	<cmsis_ccs.h>
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\cmsis\core_cmfunc.h
+	<cmsis_iar.h>
+	<cmsis_ccs.h>
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\inc\system_stm32f2xx.h
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_gpio.h
+	"stm32f2xx.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_pwr.h
+	"stm32f2xx.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_rcc.h
+	"stm32f2xx.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_rtc.h
+	"stm32f2xx.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_spi.h
+	"stm32f2xx.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_usart.h
+	"stm32f2xx.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\misc.h
+	"stm32f2xx.h"
+
+1461044062 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\queue.h
+
+1399766688 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\targets\target_currenttarget.h
+	"Target_Project_Open_207V_C.h"
+
+1417410272 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\targets\target_project_open_207v_c.h
+
+1496388944 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\bkpsram.c
+	<string.h>
+	"stm32f2xx_conf.h"
+	"Types.h"
+	"BkpSram.h"
+
+1461402936 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\gpio.c
+	"../inc/stm32f2xx_conf.h"
+	"../Utils/Types.h"
+	"../Targets/Target_CurrentTarget.h"
+	"gpio.h"
+
+1477549576 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\rtc.c
+	<stdio.h>
+	<string.h>
+	<time.h>
+	"../../inc/stm32f2xx_conf.h"
+	"../Utils/Types.h"
+	"rtc.h"
+
+1477549224 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\rtcbackupreg.c
+	"../Utils/Types.h"
+	"rtc.h"
+	"rtcBackupReg.h"
+
+1464322350 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\spi.c
+	"../../inc/stm32f2xx_conf.h"
+	"../Utils/types.h"
+	"../Targets/Target_CurrentTarget.h"
+	"gpio.h"
+	"spi.h"
+	"../Utils/timer.h"
+
+1756774320 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\systick.c
+	"../inc/stm32f2xx_conf.h"
+	"../Utils/Types.h"
+
+1463029154 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\usart.c
+	<stdio.h>
+	<stdarg.h>
+	<stdlib.h>
+	"../inc/stm32f2xx_conf.h"
+	"../Utils/types.h"
+	"../Utils/Queue.h"
+	"../Targets/Target_CurrentTarget.h"
+	"gpio.h"
+	"usart.h"
+
+1501080292 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\file\filedir.c
+	<string.h>
+	"types.h"
+	"Rtc.h"
+	"../System/SysTime.h"
+	"../DriversExternalDevices/FlashMem/NandSimu.h"
+	"../Memory/FlashMemMap.h"
+	"../Memory/Flash.h"
+	"FileHeader.h"
+	"FileWriteRef.h"
+	"FileDir.h"
+
+1500015570 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\file\filewriteref.h
+
+1462944032 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\iostream\iostream.c
+	<stdio.h>
+	<stdarg.h>
+	<string.h>
+	"../Utils/types.h"
+	"../Serial/serial.h"
+	"ioStream.h"
+
+1499754266 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\memory\flash.c
+	<string.h>
+	"types.h"
+	"../DriversExternalDevices/FlashMem/NandSimu.h"
+	"Flash.h"
+
+1499237214 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\memory\flashmemmap.c
+	<string.h>
+	"types.h"
+	"../DriversExternalDevices/FlashMem/NandSimu.h"
+	"Flash.h"
+	"FlashMemMap.h"
+
+1476853364 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\net\ymodem.c
+	<stdio.h>
+	<stdarg.h>
+	<string.h>
+	<stdlib.h>
+	"../Utils/types.h"
+	"../Utils/timer.h"
+	"../Utils/stateMachine.h"
+	"../Utils/crc.h"
+	"../IoStream/ioStream.h"
+	"yModem.h"
+
+1466284412 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\statemachine.h
+
+1476655880 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\crc.h
+
+1479555206 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\serial\serial.c
+	<stdio.h>
+	<stdarg.h>
+	<stdlib.h>
+	"../inc/stm32f2xx_conf.h"
+	"../Utils/Types.h"
+	"../Utils/Queue.h"
+	"../Utils/timer.h"
+	"../Targets/Target_CurrentTarget.h"
+	"../DriversMcuPeripherals/gpio.h"
+	"../DriversMcuPeripherals/usart.h"
+	"serial.h"
+
+1424543050 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\system\devinfo.c
+	"string.h"
+	"../Utils/Types.h"
+	"DevInfo.h"
+	"stm32f2xx_conf.h"
+
+1496215418 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\system\sysboot.c
+	"../inc/stm32f2xx_conf.h"
+	"../Utils/types.h"
+	"../Utils/timer.h"
+	"../Utils/stateMachine.h"
+	"../DriversMcuPeripherals/rtcBackupReg.h"
+	"SysBoot.h"
+
+1496325292 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\system\systime.c
+	<stdio.h>
+	<string.h>
+	<time.h>
+	"../Utils/types.h"
+	"Rtc.h"
+	"SysTime.h"
+
+1479191190 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\adcutils.c
+	"./types.h"
+
+1476655930 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\crc.c
+	"types.h"
+
+1468742514 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\queue.c
+	<string.h>
+	"./Types.h"
+	"./queue.h"
+	"./queueDataTypes.h"
+
+1458011702 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\queuedatatypes.h
+
+1496732334 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\semaphore.c
+	"./Types.h"
+	"./timer.h"
+	"./semaphore.h"
+
+1466284586 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\statemachine.c
+	<stdio.h>
+	<string.h>
+	"./types.h"
+	"./timer.h"
+	"./stateMachine.h"
+
+1496378754 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\stringutils.c
+	<string.h>
+	<stdlib.h>
+	<limits.h>
+	<errno.h>
+	"./types.h"
+	"stringUtils.h"
+
+1459139166 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\utils\timer.c
+	"Types.h"
+	"Timer.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\misc.c
+	"misc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_adc.c
+	"stm32f2xx_adc.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_can.c
+	"stm32f2xx_can.h"
+	"stm32f2xx_rcc.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_can.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_crc.c
+	"stm32f2xx_crc.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_crc.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_cryp.c
+	"stm32f2xx_cryp.h"
+	"stm32f2xx_rcc.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_cryp.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_cryp_aes.c
+	"stm32f2xx_cryp.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_cryp_des.c
+	"stm32f2xx_cryp.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_cryp_tdes.c
+	"stm32f2xx_cryp.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_dac.c
+	"stm32f2xx_dac.h"
+	"stm32f2xx_rcc.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_dac.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_dbgmcu.c
+	"stm32f2xx_dbgmcu.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_dbgmcu.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_dcmi.c
+	"stm32f2xx_dcmi.h"
+	"stm32f2xx_rcc.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_dcmi.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_dma.c
+	"stm32f2xx_dma.h"
+	"stm32f2xx_rcc.h"
+
+1400501476 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_dma.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_exti.c
+	"stm32f2xx_exti.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_exti.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_flash.c
+	"stm32f2xx_flash.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_flash.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_fsmc.c
+	"stm32f2xx_fsmc.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_fsmc.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_gpio.c
+	"stm32f2xx_gpio.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_hash.c
+	"stm32f2xx_hash.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_hash.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_hash_md5.c
+	"stm32f2xx_hash.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_hash_sha1.c
+	"stm32f2xx_hash.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_i2c.c
+	"stm32f2xx_i2c.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_i2c.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_iwdg.c
+	"stm32f2xx_iwdg.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_iwdg.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_pwr.c
+	"stm32f2xx_pwr.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_rcc.c
+	"stm32f2xx_rcc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_rng.c
+	"stm32f2xx_rng.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_rng.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_rtc.c
+	"stm32f2xx_rtc.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_sdio.c
+	"stm32f2xx_sdio.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_sdio.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_spi.c
+	"stm32f2xx_spi.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_syscfg.c
+	"stm32f2xx_syscfg.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_syscfg.h
+	"stm32f2xx.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_tim.c
+	"stm32f2xx_tim.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_tim.h
+	"stm32f2xx.h"
+
+1476421364 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_usart.c
+	"stm32f2xx_usart.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\src\stm32f2xx_wwdg.c
+	"stm32f2xx_wwdg.h"
+	"stm32f2xx_rcc.h"
+
+1400501478 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\spl\inc\stm32f2xx_wwdg.h
+	"stm32f2xx.h"
+
+1756774327 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\src\main.c
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	"../inc/stm32f2xx_conf.h"
+	"../Application/Utils/Types.h"
+	"../Application/Utils/Queue.h"
+	"../Application/Targets/Target_CurrentTarget.h"
+	"../Application/DriversMcuPeripherals/sysTick.h"
+	"../Application/Utils/timer.h"
+	"../Application/DriversMcuPeripherals/gpio.h"
+	"../Application/DriversMcuPeripherals/usart.h"
+	"../Application/DriversMcuPeripherals/rtc.h"
+	"../Application/DriversExternalDevices/FlashMem/NandSimu.h"
+	"../Application/Memory/Flash.h"
+	"../Application/Serial/serial.h"
+	"../Application/IoStream/ioStream.h"
+	"../Application/Console/strLineEditor.h"
+	"../Application/Console/print.h"
+	"../Application/Console/console.h"
+	"../Application/Console/Command/command.h"
+	"../Application/System/SysBoot.h"
+	"../Application/System/SysTime.h"
+
+1404577760 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\driversmcuperipherals\systick.h
+
+1400501476 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\src\startup_stm32f2xx.s
+
+1400501476 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\src\system_stm32f2xx.c
+	"stm32f2xx.h"
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\croutine.c
+	"FreeRTOS.h"
+	"task.h"
+	"croutine.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\freertos.h
+	<stddef.h>
+	<stdint.h>
+	"FreeRTOSConfig.h"
+	"projdefs.h"
+	"portable.h"
+	<reent.h>
+
+1756774503 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\freertosconfig.h
+	<stdint.h>
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\projdefs.h
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\portable.h
+	"deprecated_definitions.h"
+	"portmacro.h"
+	"mpu_wrappers.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\deprecated_definitions.h
+	"..\..\Source\portable\owatcom\16bitdos\pc\portmacro.h"
+	"..\..\Source\portable\owatcom\16bitdos\flsh186\portmacro.h"
+	"../portable/GCC/ATMega323/portmacro.h"
+	"../portable/IAR/ATMega323/portmacro.h"
+	"../../Source/portable/MPLAB/PIC24_dsPIC/portmacro.h"
+	"../../Source/portable/MPLAB/PIC24_dsPIC/portmacro.h"
+	"../../Source/portable/MPLAB/PIC18F/portmacro.h"
+	"../../Source/portable/MPLAB/PIC32MX/portmacro.h"
+	"libFreeRTOS/Include/portmacro.h"
+	"../../Source/portable/SDCC/Cygnal/portmacro.h"
+	"../../Source/portable/GCC/ARM7_LPC2000/portmacro.h"
+	"portmacro.h"
+	"../../Source/portable/GCC/ARM7_LPC23xx/portmacro.h"
+	"..\..\Source\portable\IAR\MSP430\portmacro.h"
+	"../../Source/portable/GCC/MSP430F449/portmacro.h"
+	"../../Source/portable/Rowley/MSP430F449/portmacro.h"
+	"..\..\Source\portable\RVDS\ARM7_LPC21xx\portmacro.h"
+	"../../Source/portable/GCC/ARM7_AT91SAM7S/portmacro.h"
+	"..\..\Source\portable\IAR\AtmelSAM7S64\portmacro.h"
+	"..\..\Source\portable\IAR\AtmelSAM9XE\portmacro.h"
+	"..\..\Source\portable\IAR\LPC2000\portmacro.h"
+	"..\..\Source\portable\IAR\STR71x\portmacro.h"
+	"..\..\Source\portable\IAR\STR75x\portmacro.h"
+	"..\..\Source\portable\GCC\STR75x\portmacro.h"
+	"..\..\Source\portable\IAR\STR91x\portmacro.h"
+	"../../Source/portable/GCC/H8S2329/portmacro.h"
+	"../../Source/portable/GCC/ARM7_AT91FR40008/portmacro.h"
+	"../../Source/portable/RVDS/ARM_CM3/portmacro.h"
+	"../../Source/portable/GCC/ARM_CM3/portmacro.h"
+	"../../Source/portable/GCC/ARM_CM3/portmacro.h"
+	"../../Source/portable/IAR/ARM_CM3/portmacro.h"
+	"../../Source/portable/IAR/ARM_CM3/portmacro.h"
+	"../../Source/portable/CodeWarrior/HCS12/portmacro.h"
+	"../../Source/portable/GCC/MicroBlaze/portmacro.h"
+	"..\..\Source\portable\Paradigm\Tern_EE\small\portmacro.h"
+	"../../Source/portable/GCC/HCS12/portmacro.h"
+	"../../Source/portable/GCC/MCF5235/portmacro.h"
+	"../../../Source/portable/GCC/ColdFire_V2/portmacro.h"
+	"../../Source/portable/CodeWarrior/ColdFire_V2/portmacro.h"
+	"../../Source/portable/GCC/PPC405_Xilinx/portmacro.h"
+	"../../Source/portable/GCC/PPC440_Xilinx/portmacro.h"
+	"..\..\Source\portable\Softune\MB96340\portmacro.h"
+	"frconfig.h"
+	"..\portable\BCC\16BitDOS\PC\prtmacro.h"
+	"frconfig.h"
+	"..\portable\BCC\16BitDOS\flsh186\prtmacro.h"
+	"portmacro.h"
+	"portmacro.h"
+	"portmacro.h"
+	"portmacro.h"
+	"../../Source/portable/IAR/V850ES/portmacro.h"
+	"../../Source/portable/IAR/V850ES/portmacro.h"
+	"../../Source/portable/IAR/V850ES/portmacro.h"
+	"../../Source/portable/IAR/V850ES/portmacro.h"
+	"../../Source/portable/IAR/V850ES/portmacro.h"
+	"../../Source/portable/IAR/78K0R/portmacro.h"
+	"../../Source/portable/IAR/78K0R/portmacro.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\portable\gcc\arm_cm3\portmacro.h
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\mpu_wrappers.h
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\task.h
+	"list.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\list.h
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\croutine.h
+	"list.h"
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\event_groups.c
+	<stdlib.h>
+	"FreeRTOS.h"
+	"task.h"
+	"timers.h"
+	"event_groups.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\timers.h
+	"task.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\event_groups.h
+	"timers.h"
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\list.c
+	<stdlib.h>
+	"FreeRTOS.h"
+	"list.h"
+
+1756774541 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\portable\gcc\arm_cm3\port.c
+	"FreeRTOS.h"
+	"task.h"
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\portable\memmang\heap_4.c
+	<stdlib.h>
+	"FreeRTOS.h"
+	"task.h"
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\queue.c
+	<stdlib.h>
+	<string.h>
+	"FreeRTOS.h"
+	"task.h"
+	"queue.h"
+	"croutine.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\queue.h
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\stream_buffer.c
+	<stdint.h>
+	<string.h>
+	"FreeRTOS.h"
+	"task.h"
+	"stream_buffer.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\stream_buffer.h
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\tasks.c
+	<stdlib.h>
+	<string.h>
+	"FreeRTOS.h"
+	"task.h"
+	"timers.h"
+	"stack_macros.h"
+	<stdio.h>
+	"tasks_test_access_functions.h"
+	"freertos_tasks_c_additions.h"
+
+1756765323 c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\include\stack_macros.h
+
+1756765323 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\freertos\timers.c
+	<stdlib.h>
+	"FreeRTOS.h"
+	"task.h"
+	"queue.h"
+	"timers.h"
+
+1756774568 source:c:\users\jorge-non-admin\documents\iotprojects\p6-stm32baseproject3\application\apps\freertoshandlers.c
+	"FreeRTOS.h"
+	"task.h"
+	"portmacro.h"
+

@@ -135,9 +135,13 @@ UINT32 SysTickGetTickRate( void )
 //! \return     void
 //!
 //////////////////////////////////////////////////////////////////////////////////////////////////
+// SysTick_Handler moved to FreeRTOSHandlers.c to avoid conflicts
+// The handler now combines FreeRTOS tick with system tick functionality
+/*
 void SysTick_Handler( void )
 {
     gqdwSysTickCounter++;
     gdwSysTickCounter++;
 }
+*/
 

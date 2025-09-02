@@ -215,6 +215,7 @@ volatile uint32_t ulDummy = 0UL;
 }
 /*-----------------------------------------------------------*/
 
+#ifndef configUSE_CUSTOM_INTERRUPT_HANDLERS
 void vPortSVCHandler( void )
 {
 	__asm volatile (
@@ -233,6 +234,7 @@ void vPortSVCHandler( void )
 					"pxCurrentTCBConst2: .word pxCurrentTCB				\n"
 				);
 }
+#endif
 /*-----------------------------------------------------------*/
 
 static void prvPortStartFirstTask( void )
@@ -387,6 +389,7 @@ void vPortExitCritical( void )
 }
 /*-----------------------------------------------------------*/
 
+#ifndef configUSE_CUSTOM_INTERRUPT_HANDLERS
 void xPortPendSVHandler( void )
 {
 	/* This is a naked function. */
@@ -422,8 +425,10 @@ void xPortPendSVHandler( void )
 	::"i"(configMAX_SYSCALL_INTERRUPT_PRIORITY)
 	);
 }
+#endif
 /*-----------------------------------------------------------*/
 
+#ifndef configUSE_CUSTOM_INTERRUPT_HANDLERS
 void xPortSysTickHandler( void )
 {
 	/* The SysTick runs at the lowest interrupt priority, so when this interrupt
@@ -442,6 +447,7 @@ void xPortSysTickHandler( void )
 	}
 	portENABLE_INTERRUPTS();
 }
+#endif
 /*-----------------------------------------------------------*/
 
 #if( configUSE_TICKLESS_IDLE == 1 )

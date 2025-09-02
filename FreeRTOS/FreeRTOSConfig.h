@@ -98,4 +98,8 @@ standard names. */
 /* Define the SysTick handler for STM32F207VC */
 #define xPortSysTickHandler SysTick_Handler
 
+/* Prevent port.c from defining interrupt handlers - they are defined in FreeRTOSHandlers.c */
+#define configOVERRIDE_DEFAULT_TICK_CONFIGURATION 1
+#define configUSE_CUSTOM_INTERRUPT_HANDLERS 1
+
 #endif /* FREERTOS_CONFIG_H */

@@ -74,6 +74,9 @@
 			<Add directory=".\cmsis" />
 			<Add directory=".\SPL\inc" />
 			<Add directory=".\SPL\src" />
+			<Add directory=".\FreeRTOS\include" />
+			<Add directory=".\FreeRTOS\portable\GCC\ARM_CM3" />
+			<Add directory=".\FreeRTOS" />
 		</Compiler>
 		<Linker>
 			<Add option="-eb_start_files" />
@@ -341,6 +344,38 @@
 		<Unit filename="src\system_stm32f2xx.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="FreeRTOS\tasks.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\queue.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\list.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\timers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\event_groups.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\stream_buffer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\croutine.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\portable\GCC\ARM_CM3\port.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="FreeRTOS\portable\MemMang\heap_4.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Apps\FreeRTOSHandlers.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Application\Apps\FreeRTOSHandlers.h" />
+		<Unit filename="FreeRTOS\FreeRTOSConfig.h" />
 		<Unit filename="stm32f207vc_flash.ld" />
 		<Unit filename="stm32f207vc_sram.ld" />
 		<Extensions>

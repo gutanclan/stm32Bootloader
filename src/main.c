@@ -41,11 +41,16 @@
 #include "../Application/System/SysBoot.h"
 #include "../Application/System/SysTime.h"
 
+// FreeRTOS includes
+#include "../FreeRTOS/include/FreeRTOS.h"
+#include "../FreeRTOS/include/task.h"
+#include "../Application/Apps/FreeRTOSHandlers.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void mainHardwareSetup       ( void );
 static void mainApplicationInit     ( void );
-static void mainApplicationTask     ( void );
+static void mainApplicationTask     ( void *pvParameters );
 
 void HardFault_Handler              ( void );
 void PendSV_Handler                 ( void );
@@ -67,12 +72,21 @@ int main( void )
     // initializes application modules
     mainApplicationInit();
 
-    // run the main task
-    mainApplicationTask();
+    // Initialize FreeRTOS (tasks will be created here in the future)
+    // For now, create a simple main task to preserve existing functionality
+    xTaskCreate(mainApplicationTask, "MainTask", configMINIMAL_STACK_SIZE * 4, NULL, 1, NULL);
+    
+    // Start the FreeRTOS scheduler
+    vTaskStartScheduler();
 
     /////////////////////////////////////////////
     // it should never reach this point!!
+    // If we get here, there was insufficient memory to create the idle task
     /////////////////////////////////////////////
+    while(1)
+    {
+        // Error: FreeRTOS scheduler failed to start
+    }
 }
 
 void mainHardwareSetup( void )
@@ -132,7 +146,7 @@ void mainApplicationInit( void )
     SysBootInit();
 }
 
-void mainApplicationTask( void )
+void mainApplicationTask( void *pvParameters )
 {
     PrintDebugfEnable( TRUE );
 
@@ -303,6 +317,9 @@ void HardFault_Handler( void )
     {}
 }
 
+// PendSV_Handler and SVC_Handler moved to FreeRTOSHandlers.c to avoid conflicts
+// These handlers are now managed by FreeRTOS for proper task switching
+/*
 void PendSV_Handler( void )
 {
     while(1)
@@ -314,6 +331,7 @@ void SVC_Handler( void )
     while(1)
     {}
 }
+*/
 
 void UsageFault_Handler( void )
 {
