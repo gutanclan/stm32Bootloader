@@ -69,11 +69,13 @@
 			<Add symbol="STM32F2XX" />
 			<Add symbol="USE_STDPERIPH_DRIVER" />
 			<Add symbol="PROJECT_C" />
-			<Add directory=".\inc" />
-			<Add directory=".\src" />
+			<Add directory=".\hal" />
+			<Add directory=".\arch" />
 			<Add directory=".\cmsis" />
-			<Add directory=".\SPL\inc" />
-			<Add directory=".\SPL\src" />
+			<Add directory=".\drivers" />
+			<Add directory=".\subsys" />
+			<Add directory=".\services" />
+			<Add directory=".\app" />
 			<Add directory=".\FreeRTOS\include" />
 			<Add directory=".\FreeRTOS\portable\GCC\ARM_CM3" />
 			<Add directory=".\FreeRTOS" />
@@ -82,133 +84,133 @@
 			<Add option="-eb_start_files" />
 			<Add option="-eb_lib=n" />
 		</Linker>
-		<Unit filename="Application\Console\Command\command.c">
+		<Unit filename="subsys\console\Command\command.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Console\Command\command.h" />
-		<Unit filename="Application\Console\console.c">
+		<Unit filename="subsys\console\Command\command.h" />
+		<Unit filename="subsys\console\console.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Console\console.h" />
-		<Unit filename="Application\Console\print.c">
+		<Unit filename="subsys\console\console.h" />
+		<Unit filename="subsys\console\print.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Console\print.h" />
-		<Unit filename="Application\Console\strLineEditor.c">
+		<Unit filename="subsys\console\print.h" />
+		<Unit filename="subsys\console\strLineEditor.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Console\strLineEditor.h" />
-		<Unit filename="Application\Console\strLineEditor.ods" />
-		<Unit filename="Application\Console\strQueueCir.c">
+		<Unit filename="subsys\console\strLineEditor.h" />
+		<Unit filename="subsys\console\strLineEditor.ods" />
+		<Unit filename="subsys\console\strQueueCir.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Console\strQueueCir.h" />
-		<Unit filename="Application\DriversExternalDevices\FlashMem\NandSimu.c">
+		<Unit filename="subsys\console\strQueueCir.h" />
+		<Unit filename="drivers\flash\FlashMem\NandSimu.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversExternalDevices\FlashMem\NandSimu.h" />
-		<Unit filename="Application\DriversMcuPeripherals\adc.c">
+		<Unit filename="drivers\flash\FlashMem\NandSimu.h" />
+		<Unit filename="drivers\adc\adc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\adc.h" />
-		<Unit filename="Application\DriversMcuPeripherals\BkpSram.c">
+		<Unit filename="drivers\adc\adc.h" />
+		<Unit filename="drivers\common\BkpSram.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\BkpSram.h" />
-		<Unit filename="Application\DriversMcuPeripherals\gpio.c">
+		<Unit filename="drivers\common\BkpSram.h" />
+		<Unit filename="drivers\gpio\gpio.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\gpio.h" />
-		<Unit filename="Application\DriversMcuPeripherals\rtc.c">
+		<Unit filename="drivers\gpio\gpio.h" />
+		<Unit filename="drivers\rtc\rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\rtc.h" />
-		<Unit filename="Application\DriversMcuPeripherals\rtcBackupReg.c">
+		<Unit filename="drivers\rtc\rtc.h" />
+		<Unit filename="drivers\rtc\rtcBackupReg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\rtcBackupReg.h" />
-		<Unit filename="Application\DriversMcuPeripherals\spi.c">
+		<Unit filename="drivers\rtc\rtcBackupReg.h" />
+		<Unit filename="drivers\spi\spi.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\spi.h" />
-		<Unit filename="Application\DriversMcuPeripherals\sysTick.c">
+		<Unit filename="drivers\spi\spi.h" />
+		<Unit filename="drivers\common\sysTick.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\sysTick.h" />
-		<Unit filename="Application\DriversMcuPeripherals\usart.c">
+		<Unit filename="drivers\common\sysTick.h" />
+		<Unit filename="drivers\uart\usart.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\DriversMcuPeripherals\usart.h" />
-		<Unit filename="Application\File\FileDir.c">
+		<Unit filename="drivers\uart\usart.h" />
+		<Unit filename="subsys\filesystem\FileDir.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\File\FileDir.h" />
-		<Unit filename="Application\File\FileHeader.h" />
-		<Unit filename="Application\File\FileWriteRef.h" />
-		<Unit filename="Application\IoStream\ioStream.c">
+		<Unit filename="subsys\filesystem\FileDir.h" />
+		<Unit filename="subsys\filesystem\FileHeader.h" />
+		<Unit filename="subsys\filesystem\FileWriteRef.h" />
+		<Unit filename="subsys\iostream\ioStream.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\IoStream\ioStream.h" />
-		<Unit filename="Application\Memory\Flash.c">
+		<Unit filename="subsys\iostream\ioStream.h" />
+		<Unit filename="subsys\memory\Flash.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Memory\Flash.h" />
-		<Unit filename="Application\Memory\FlashMemMap.c">
+		<Unit filename="subsys\memory\Flash.h" />
+		<Unit filename="subsys\memory\FlashMemMap.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Memory\FlashMemMap.h" />
-		<Unit filename="Application\Net\yModem.c">
+		<Unit filename="subsys\memory\FlashMemMap.h" />
+		<Unit filename="subsys\net\yModem.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Net\yModem.h" />
-		<Unit filename="Application\Serial\serial.c">
+		<Unit filename="subsys\net\yModem.h" />
+		<Unit filename="subsys\serial\serial.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Serial\serial.h" />
-		<Unit filename="Application\System\DevInfo.c">
+		<Unit filename="subsys\serial\serial.h" />
+		<Unit filename="services\DevInfo.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\System\DevInfo.h" />
-		<Unit filename="Application\System\SysBoot.c">
+		<Unit filename="services\DevInfo.h" />
+		<Unit filename="services\SysBoot.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\System\SysBoot.h" />
-		<Unit filename="Application\System\SysTime.c">
+		<Unit filename="services\SysBoot.h" />
+		<Unit filename="services\SysTime.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\System\SysTime.h" />
-		<Unit filename="Application\Targets\Target_CurrentTarget.h" />
-		<Unit filename="Application\Targets\Target_Project_Open_207V_C.h" />
-		<Unit filename="Application\Utils\adcUtils.c">
+		<Unit filename="services\SysTime.h" />
+		<Unit filename="drivers\common\Target_CurrentTarget.h" />
+		<Unit filename="drivers\common\Target_Project_Open_207V_C.h" />
+		<Unit filename="drivers\common\adcUtils.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Utils\adcUtils.h" />
-		<Unit filename="Application\Utils\crc.c">
+		<Unit filename="drivers\common\adcUtils.h" />
+		<Unit filename="drivers\common\crc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Utils\crc.h" />
-		<Unit filename="Application\Utils\queue.c">
+		<Unit filename="drivers\common\crc.h" />
+		<Unit filename="drivers\common\queue.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Utils\queue.h" />
-		<Unit filename="Application\Utils\queueDataTypes.h" />
-		<Unit filename="Application\Utils\semaphore.c">
+		<Unit filename="drivers\common\queue.h" />
+		<Unit filename="drivers\common\queueDataTypes.h" />
+		<Unit filename="drivers\common\semaphore.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Utils\semaphore.h" />
-		<Unit filename="Application\Utils\stateMachine.c">
+		<Unit filename="drivers\common\semaphore.h" />
+		<Unit filename="drivers\common\stateMachine.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Utils\stateMachine.h" />
-		<Unit filename="Application\Utils\stringUtils.c">
+		<Unit filename="drivers\common\stateMachine.h" />
+		<Unit filename="drivers\common\stringUtils.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Utils\stringUtils.h" />
-		<Unit filename="Application\Utils\timer.c">
+		<Unit filename="drivers\common\stringUtils.h" />
+		<Unit filename="drivers\common\timer.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Utils\timer.h" />
-		<Unit filename="Application\Utils\types.h" />
+		<Unit filename="drivers\common\timer.h" />
+		<Unit filename="drivers\common\types.h" />
 		<Unit filename="cmsis\core_cm3.h" />
 		<Unit filename="cmsis\core_cmFunc.h" />
 		<Unit filename="cmsis\core_cmInstr.h" />
@@ -216,132 +218,132 @@
 		<Unit filename="inc\stm32f2xx_conf.h" />
 		<Unit filename="inc\system_stm32f2xx.h" />
 		<Unit filename="readme.txt" />
-		<Unit filename="SPL\inc\misc.h" />
-		<Unit filename="SPL\inc\stm32f2xx_adc.h" />
-		<Unit filename="SPL\inc\stm32f2xx_can.h" />
-		<Unit filename="SPL\inc\stm32f2xx_crc.h" />
-		<Unit filename="SPL\inc\stm32f2xx_cryp.h" />
-		<Unit filename="SPL\inc\stm32f2xx_dac.h" />
-		<Unit filename="SPL\inc\stm32f2xx_dbgmcu.h" />
-		<Unit filename="SPL\inc\stm32f2xx_dcmi.h" />
-		<Unit filename="SPL\inc\stm32f2xx_dma.h" />
-		<Unit filename="SPL\inc\stm32f2xx_exti.h" />
-		<Unit filename="SPL\inc\stm32f2xx_flash.h" />
-		<Unit filename="SPL\inc\stm32f2xx_fsmc.h" />
-		<Unit filename="SPL\inc\stm32f2xx_gpio.h" />
-		<Unit filename="SPL\inc\stm32f2xx_hash.h" />
-		<Unit filename="SPL\inc\stm32f2xx_i2c.h" />
-		<Unit filename="SPL\inc\stm32f2xx_iwdg.h" />
-		<Unit filename="SPL\inc\stm32f2xx_pwr.h" />
-		<Unit filename="SPL\inc\stm32f2xx_rcc.h" />
-		<Unit filename="SPL\inc\stm32f2xx_rng.h" />
-		<Unit filename="SPL\inc\stm32f2xx_rtc.h" />
-		<Unit filename="SPL\inc\stm32f2xx_sdio.h" />
-		<Unit filename="SPL\inc\stm32f2xx_spi.h" />
-		<Unit filename="SPL\inc\stm32f2xx_syscfg.h" />
-		<Unit filename="SPL\inc\stm32f2xx_tim.h" />
-		<Unit filename="SPL\inc\stm32f2xx_usart.h" />
-		<Unit filename="SPL\inc\stm32f2xx_wwdg.h" />
-		<Unit filename="SPL\src\misc.c">
+		<Unit filename="hal\inc\misc.h" />
+		<Unit filename="hal\inc\stm32f2xx_adc.h" />
+		<Unit filename="hal\inc\stm32f2xx_can.h" />
+		<Unit filename="hal\inc\stm32f2xx_crc.h" />
+		<Unit filename="hal\inc\stm32f2xx_cryp.h" />
+		<Unit filename="hal\inc\stm32f2xx_dac.h" />
+		<Unit filename="hal\inc\stm32f2xx_dbgmcu.h" />
+		<Unit filename="hal\inc\stm32f2xx_dcmi.h" />
+		<Unit filename="hal\inc\stm32f2xx_dma.h" />
+		<Unit filename="hal\inc\stm32f2xx_exti.h" />
+		<Unit filename="hal\inc\stm32f2xx_flash.h" />
+		<Unit filename="hal\inc\stm32f2xx_fsmc.h" />
+		<Unit filename="hal\inc\stm32f2xx_gpio.h" />
+		<Unit filename="hal\inc\stm32f2xx_hash.h" />
+		<Unit filename="hal\inc\stm32f2xx_i2c.h" />
+		<Unit filename="hal\inc\stm32f2xx_iwdg.h" />
+		<Unit filename="hal\inc\stm32f2xx_pwr.h" />
+		<Unit filename="hal\inc\stm32f2xx_rcc.h" />
+		<Unit filename="hal\inc\stm32f2xx_rng.h" />
+		<Unit filename="hal\inc\stm32f2xx_rtc.h" />
+		<Unit filename="hal\inc\stm32f2xx_sdio.h" />
+		<Unit filename="hal\inc\stm32f2xx_spi.h" />
+		<Unit filename="hal\inc\stm32f2xx_syscfg.h" />
+		<Unit filename="hal\inc\stm32f2xx_tim.h" />
+		<Unit filename="hal\inc\stm32f2xx_usart.h" />
+		<Unit filename="hal\inc\stm32f2xx_wwdg.h" />
+		<Unit filename="hal\src\misc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_adc.c">
+		<Unit filename="hal\src\stm32f2xx_adc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_can.c">
+		<Unit filename="hal\src\stm32f2xx_can.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_crc.c">
+		<Unit filename="hal\src\stm32f2xx_crc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_cryp.c">
+		<Unit filename="hal\src\stm32f2xx_cryp.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_cryp_aes.c">
+		<Unit filename="hal\src\stm32f2xx_cryp_aes.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_cryp_des.c">
+		<Unit filename="hal\src\stm32f2xx_cryp_des.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_cryp_tdes.c">
+		<Unit filename="hal\src\stm32f2xx_cryp_tdes.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_dac.c">
+		<Unit filename="hal\src\stm32f2xx_dac.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_dbgmcu.c">
+		<Unit filename="hal\src\stm32f2xx_dbgmcu.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_dcmi.c">
+		<Unit filename="hal\src\stm32f2xx_dcmi.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_dma.c">
+		<Unit filename="hal\src\stm32f2xx_dma.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_exti.c">
+		<Unit filename="hal\src\stm32f2xx_exti.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_flash.c">
+		<Unit filename="hal\src\stm32f2xx_flash.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_fsmc.c">
+		<Unit filename="hal\src\stm32f2xx_fsmc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_gpio.c">
+		<Unit filename="hal\src\stm32f2xx_gpio.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_hash.c">
+		<Unit filename="hal\src\stm32f2xx_hash.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_hash_md5.c">
+		<Unit filename="hal\src\stm32f2xx_hash_md5.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_hash_sha1.c">
+		<Unit filename="hal\src\stm32f2xx_hash_sha1.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_i2c.c">
+		<Unit filename="hal\src\stm32f2xx_i2c.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_iwdg.c">
+		<Unit filename="hal\src\stm32f2xx_iwdg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_pwr.c">
+		<Unit filename="hal\src\stm32f2xx_pwr.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_rcc.c">
+		<Unit filename="hal\src\stm32f2xx_rcc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_rng.c">
+		<Unit filename="hal\src\stm32f2xx_rng.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_rtc.c">
+		<Unit filename="hal\src\stm32f2xx_rtc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_sdio.c">
+		<Unit filename="hal\src\stm32f2xx_sdio.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_spi.c">
+		<Unit filename="hal\src\stm32f2xx_spi.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_syscfg.c">
+		<Unit filename="hal\src\stm32f2xx_syscfg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_tim.c">
+		<Unit filename="hal\src\stm32f2xx_tim.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_usart.c">
+		<Unit filename="hal\src\stm32f2xx_usart.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="SPL\src\stm32f2xx_wwdg.c">
+		<Unit filename="hal\src\stm32f2xx_wwdg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\main.c">
+		<Unit filename="arch\main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\startup_stm32f2xx.S">
+		<Unit filename="arch\startup_stm32f2xx.S">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\system_stm32f2xx.c">
+		<Unit filename="arch\system_stm32f2xx.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="FreeRTOS\tasks.c">
@@ -371,10 +373,10 @@
 		<Unit filename="FreeRTOS\portable\MemMang\heap_4.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Apps\FreeRTOSHandlers.c">
+		<Unit filename="app\FreeRTOSHandlers.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="Application\Apps\FreeRTOSHandlers.h" />
+		<Unit filename="app\FreeRTOSHandlers.h" />
 		<Unit filename="FreeRTOS\FreeRTOSConfig.h" />
 		<Unit filename="stm32f207vc_flash.ld" />
 		<Unit filename="stm32f207vc_sram.ld" />
