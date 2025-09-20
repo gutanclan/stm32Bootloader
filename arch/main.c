@@ -46,11 +46,14 @@
 #include "../FreeRTOS/include/task.h"
 #include "../app/FreeRTOSHandlers.h"
 
+// Task includes
+#include "tasks/test_task.h"
+#include "tasks/main_app_task.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void mainHardwareSetup       ( void );
 static void mainApplicationInit     ( void );
-static void mainApplicationTask     ( void *pvParameters );
 
 void HardFault_Handler              ( void );
 void PendSV_Handler                 ( void );
@@ -64,35 +67,9 @@ static CHAR gcBuffer[256];
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Simple test task for FreeRTOS isolation
-void vTestTask(void *pvParameters)
-{
-    // Configure pin D12 as output for LED
-    GpioPortClockEnable(GPIO_PORT_D, TRUE);
-    GpioModeSetOutput(GPIO_PORT_D, 12);
-    
-    // Initialize LED to OFF state
-    GpioOutputRegWrite(GPIO_PORT_D, 12, GPIO_LOGIC_LOW);
-    
-    while(1)
-    {
-        // Toggle LED on pin D12
-        GpioLogicEnum currentState;
-        GpioOutputRegRead(GPIO_PORT_D, 12, &currentState);
-        
-        if(currentState == GPIO_LOGIC_LOW)
-        {
-            GpioOutputRegWrite(GPIO_PORT_D, 12, GPIO_LOGIC_HIGH);
-        }
-        else
-        {
-            GpioOutputRegWrite(GPIO_PORT_D, 12, GPIO_LOGIC_LOW);
-        }
-        
-        // Delay 1 second between blinks
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
+// Task implementations moved to separate files:
+// - vTestTask -> tasks/test_task.c
+// - mainApplicationTask -> tasks/main_app_task.c
 
 int main( void )
 {
@@ -195,50 +172,6 @@ void mainApplicationInit( void )
     SysBootInit();
 }
 
-void mainApplicationTask( void *pvParameters )
-{
-    PrintDebugfEnable( TRUE );
-
-    ConsoleInputProcessingAutoUpdateEnable( CONSOLE_PORT_MAIN, TRUE );
-
-    ConsoleEnable( CONSOLE_PORT_MAIN, TRUE );
-    //ConsolePrintfEnable( CONSOLE_PORT_MAIN, TRUE );
-
-    ConsoleCommandDictionarySet( CONSOLE_PORT_MAIN, CommandDictionaryGetPointer( COMMAND_DICTIONARY_1 ) );
-
-    //UINT32  dwDelayDuration_mSec= 50;
-    UINT32  dwDelayDuration_mSec= 5000;
-    TIMER   xTimer              = TimerDownTimerStartMs( dwDelayDuration_mSec );
-
-    BOOL fIsClientConnectedPreviousState = FALSE;
-
-    while(1)
-    {
-        SysBootUpdate();
-        ConsoleInputProcessingAutoUpdate();
-        SerialPortIsClientConnectedUpdate();
-
-        if( fIsClientConnectedPreviousState != SerialPortIsClientConnected( SERIAL_PORT_MAIN ) )
-        {
-            fIsClientConnectedPreviousState = SerialPortIsClientConnected( SERIAL_PORT_MAIN );
-
-            // if new state is connected then print prompt
-            if( fIsClientConnectedPreviousState )
-            {
-                Printf( IO_STREAM_USER, ">" );
-            }
-        }
-
-        if( TimerDownTimerIsExpired(xTimer) == TRUE )
-        {
-            // restart timer
-            xTimer    = TimerDownTimerStartMs( dwDelayDuration_mSec );
-        }
-        
-        // Give other tasks CPU time
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-}
 
 
 void HardFault_Handler( void )

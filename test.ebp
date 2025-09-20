@@ -337,13 +337,21 @@
 		<Unit filename="hal\src\stm32f2xx_wwdg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="arch\main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="arch\startup_stm32f2xx.S">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="arch\system_stm32f2xx.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="arch\main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="arch\tasks\test_task.h" />
+		<Unit filename="arch\tasks\main_app_task.h" />
+		<Unit filename="arch\tasks\test_task.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="arch\tasks\main_app_task.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="FreeRTOS\tasks.c">
