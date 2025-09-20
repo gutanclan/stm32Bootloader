@@ -1,47 +1,57 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <EmBitz_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="arch\main.c" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="arch\main.c" open="1" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2592" topLine="71" />
+			<Cursor1 position="4760" topLine="141" />
 		</Cursor>
 	</File>
-	<File name="drivers\adc\adc.c" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="arch\tasks\test_task.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1133" topLine="13" />
+		</Cursor>
+	</File>
+	<File name="drivers\adc\adc.c" open="1" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="852" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="drivers\common\queue.c" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="drivers\common\queue.c" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="6453" topLine="174" />
 		</Cursor>
 	</File>
-	<File name="drivers\common\sysTick.c" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="drivers\common\sysTick.c" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="3892" topLine="83" />
 		</Cursor>
 	</File>
-	<File name="drivers\common\timer.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="drivers\common\timer.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="5154" topLine="104" />
+			<Cursor1 position="5002" topLine="68" />
 		</Cursor>
 	</File>
-	<File name="drivers\flash\FlashMem\NandSimu.c" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="drivers\flash\FlashMem\NandSimu.c" open="1" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="362" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="drivers\gpio\gpio.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="drivers\gpio\gpio.c" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1950" topLine="68" />
 		</Cursor>
 	</File>
-	<File name="drivers\spi\spi.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="drivers\gpio\gpio.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3353" topLine="109" />
+		</Cursor>
+	</File>
+	<File name="drivers\spi\spi.c" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="6204" topLine="180" />
 		</Cursor>
 	</File>
-	<File name="drivers\uart\usart.c" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="drivers\uart\usart.c" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="2501" topLine="73" />
 		</Cursor>
@@ -51,37 +61,47 @@
 			<Cursor1 position="2124" topLine="27" />
 		</Cursor>
 	</File>
-	<File name="FreeRTOS\portable\GCC\ARM_CM3\port.c" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="FreeRTOS\portable\GCC\ARM_CM3\port.c" open="0" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="16247" topLine="416" />
 		</Cursor>
 	</File>
-	<File name="FreeRTOS\tasks.c" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="FreeRTOS\tasks.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="67361" topLine="1887" />
+			<Cursor1 position="116212" topLine="3457" />
 		</Cursor>
 	</File>
-	<File name="services\DevInfo.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="services\DevInfo.c" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="25" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="subsys\console\Command\command.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="subsys\console\Command\command.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1443" topLine="3" />
 		</Cursor>
 	</File>
-	<File name="subsys\console\print.c" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="subsys\console\console.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="33255" topLine="751" />
+		</Cursor>
+	</File>
+	<File name="subsys\console\print.c" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="431" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="subsys\filesystem\FileDir.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="subsys\filesystem\FileDir.c" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="348" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="subsys\serial\serial.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="subsys\iostream\ioStream.h" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="688" topLine="22" />
+		</Cursor>
+	</File>
+	<File name="subsys\serial\serial.h" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="250" topLine="0" />
 		</Cursor>
